@@ -1,0 +1,17 @@
+[QUEUE]
+AMQP_URL = amqp://aiworker:password@rabbitmq:5672/dfhost
+
+#enable for support rabbitmq TLS (amqps) connection
+#TLS_CA_CERT = tlsconf/ca_certificate.pem
+#TLS_CLIENT_CERT = tlsconf/client_certificate.pem
+#TLS_CLIENT_KEY = tlsconf/client_key.pem
+
+BASE_RETRY_DELAY = 3000
+MAX_RETRIES = 5
+QUEUE_QOS = 1
+WORKER_NAME = ai.sd14
+WORKER_KEYS = all
+
+[WORKER]
+NAME = myworkername
+PRIVKEY =

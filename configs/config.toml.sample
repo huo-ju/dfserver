@@ -1,0 +1,30 @@
+AMQP_URL = "amqp://goapp:password@rabbit:5672/dfhost"
+JWT_SECRET = ""
+BASE_RETRY_DELAY = 3000
+MAX_RETRIES = 5
+QUEUE_QOS = 1
+
+#enable for support rabbitmq TLS (amqps) connection
+#TLS_CA_CERT = "tlsconf/ca_certificate.pem"
+#TLS_CLIENT_CERT = "tlsconf/client_certificate.pem"
+#TLS_CLIENT_KEY = "tlsconf/client_key.pem"
+
+[QUEUE]
+[QUEUE."ai.sd14"]
+name = "ai.sd14"
+bindkeys = ["all"]
+
+[QUEUE."process.discord"]
+name = "process.discord"
+bindkeys = ["server1"]
+
+[WORKER]
+[WORKER."process.discord"]
+name = "process.discord"
+bindkey = "server1"
+
+[SERVICE]
+[SERVICE."discord.server1"]
+name = "discord.server1"
+token = "my discord bot token"
+prefix = "!"

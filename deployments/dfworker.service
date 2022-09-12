@@ -1,0 +1,19 @@
+#dfworker.service
+
+[Unit]
+Description=diffusers worker
+After=network.target
+Requires=network-online.target
+
+[Service]
+User=dfworker
+Group=dfworker
+Restart=always
+RestartSec=10
+# set to project root directory
+WorkingDirectory=/usr/local/dfworker
+# be sure to exec with venv python, abs path
+ExecStart=/var/venv/bin/python3 /usr/local/dfworker/tworker.py
+
+[Install]
+WantedBy=multi-user.target
