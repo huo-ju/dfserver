@@ -69,7 +69,7 @@ git clone https://github.com/huggingface/diffusers.git
 cp configs/config.ini.sample configs/config.ini
 ```
 
-Edit the config.toml, setup the username/password/host address/port of the rabbitmq.
+Edit the config.ini, setup the username/password/host address/port of the rabbitmq.
 
 ### Run the ai worker
 ```bash
