@@ -141,12 +141,12 @@ func StartWorker(ctx context.Context, wrkcfg map[string]data.WorkerItem, amqpQue
 			go func() {
 				for d := range workerQueueMessageChannel {
 					var task dfpb.Task
-					var lastoutput *dfpb.Output
+					//var lastoutput *dfpb.Output
 					err := proto.Unmarshal(d.Body, &task)
 					if err == nil {
 						inputtask := task.InputList[len(task.OutputList)]
-						if len(task.OutputList) > 0 {
-							lastoutput = task.OutputList[len(task.OutputList)-1]
+						if len(task.OutputList) == 0 {
+							//return error
 						}
 						n, _ := data.TaskNameToQNameAndRKey(*inputtask.Name)
 						wrk := workerloader.GetWorker(n)
@@ -156,7 +156,7 @@ func StartWorker(ctx context.Context, wrkcfg map[string]data.WorkerItem, amqpQue
 							//d.Nack(false, true)
 							continue
 						}
-						canack, err := wrk.Work(lastoutput, inputtask.Settings)
+						canack, err := wrk.Work(task.OutputList, inputtask.Settings)
 						if err != nil {
 							//TODO: response err
 						}

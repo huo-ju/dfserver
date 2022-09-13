@@ -27,7 +27,8 @@ func mimeTofileext(mime string) string {
 	return ""
 
 }
-func (f *ProcessFileWorker) Work(lastoutput *dfpb.Output, settingsdata []byte) (bool, error) {
+func (f *ProcessFileWorker) Work(outputList []*dfpb.Output, settingsdata []byte) (bool, error) {
+	lastoutput := outputList[len(outputList)-1]
 	var settings map[string]interface{}
 	err := json.Unmarshal(settingsdata, &settings)
 	if err != nil {

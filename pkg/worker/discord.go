@@ -18,19 +18,26 @@ func (f *ProcessDiscordWorker) Name() string {
 	return "process.discord"
 }
 
-func (f *ProcessDiscordWorker) Work(lastoutput *dfpb.Output, settingsdata []byte) (bool, error) {
+//lastoutput *dfpb.Output
+func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, settingsdata []byte) (bool, error) {
 	var settings map[string]interface{}
 	err := json.Unmarshal(settingsdata, &settings)
 	if err != nil {
 		//TODO: save err log
 		return true, err
 	}
+
+	lastoutput := outputList[len(outputList)-1]
+
 	r := bytes.NewReader(lastoutput.Data)
 	messageid := settings["message_id"].(string)
 	channelid := settings["channel_id"].(string)
 	guildid := settings["guild_id"].(string)
 
-	content := fmt.Sprintf("%s by %s", string(lastoutput.Args), *lastoutput.ProducerName)
+	content := ""
+	for _, o := range outputList {
+		content += fmt.Sprintf("%s by %s\r", string(o.Args), *o.ProducerName)
+	}
 	ref := &discordgo.MessageReference{MessageID: messageid, ChannelID: channelid, GuildID: guildid}
 	msg := &discordgo.MessageSend{
 		Content:   content,

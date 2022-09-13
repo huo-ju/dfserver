@@ -40,6 +40,11 @@ func TestParse(t *testing.T) {
 	args = ArgsParse(cmd4, argslist)
 	verifyargs(t, args, cmd4_cmd, cmd4_args)
 
+	cmd5 := "!dream half -n 4 -U --face"
+	cmd5_cmd := "!dream half"
+	cmd5_args := []string{"-n 4", "-U", "--face"}
+	args = ArgsParse(cmd5, argslist)
+	verifyargs(t, args, cmd5_cmd, cmd5_args)
 }
 
 func verifyargs(t *testing.T, args *CommandArgs, rcmd string, rargs []string) {
@@ -47,6 +52,9 @@ func verifyargs(t *testing.T, args *CommandArgs, rcmd string, rargs []string) {
 		t.Errorf("parse cmd err, \nexpect: (%d) %s\nresult: (%d) %s", len(rcmd), rcmd, len(args.Cmd), args.Cmd)
 	}
 	argok := true
+	if len(args.Args) != len(rargs) {
+		argok = false
+	}
 	for i, v := range args.Args {
 		if v != rargs[i] {
 			argok = false

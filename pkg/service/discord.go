@@ -12,11 +12,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var argslist = []string{
-	"-h", "--help", "--tokenize", "-t", "--height", "-H", "--width", "-W",
-	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
-	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p"}
-
 type DiscordService struct {
 	servicename string
 	token       string
@@ -57,8 +52,8 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 		return
 	}
 	if strings.HasPrefix(m.Content, "!dream ") { //bot command
-		args := data.ArgsParse(m.Content, argslist)
-		task := data.DiscordCmdArgsToTask("ai.sd14", args)
+		args := data.ArgsParse(m.Content, data.ArgsList)
+		task := data.DiscordCmdArgsToTask(args)
 		name := "process." + d.servicename
 		data.AddDiscordInputTask(name, m.Reference(), task)
 

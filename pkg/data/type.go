@@ -17,6 +17,11 @@ type DiffSettings struct {
 	Eta               float32 `json:"eta"`
 }
 
+type RealEsrganSettings struct {
+	ModelType   string `json:"model_type"`
+	FaceEnhance bool   `json:"face_enhance"`
+}
+
 type AISettings struct {
 	AiName   string      `json:"ainame"`
 	Settings interface{} `json:"settings"`

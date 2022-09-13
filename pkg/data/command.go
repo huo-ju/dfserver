@@ -86,7 +86,7 @@ End:
 				s = StatusArgItemKStart
 				//reset index
 				startidx = i - 1
-				endidx = len(argstr)
+				endidx = startidx
 			}
 		}
 		if endidx < len(argstr) {

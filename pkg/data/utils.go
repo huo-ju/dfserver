@@ -16,10 +16,22 @@ import (
 var ArgsList []string = []string{
 	"-h", "--help", "--tokenize", "-t", "--height", "-H", "--width", "-W",
 	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
-	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p"}
+	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face"}
 
-func DiscordCmdArgsToTask(ainame string, args *CommandArgs) *dfpb.Task {
+func DiscordCmdArgsToTask(args *CommandArgs) *dfpb.Task {
+
+	//create task input and outputlist
+	inputList := []*dfpb.Input{}
+	outputList := []*dfpb.Output{}
+
 	settings := &DiffSettings{}
+	ainame := ""
+	if strings.HasPrefix(args.Cmd, "!dream ") {
+		ainame = "ai.sd14"
+	}
+
+	upscale := false
+
 	settings.Prompt = strings.Replace(args.Cmd, "!dream ", "", 1)
 	for _, a := range args.Args {
 		item := strings.Split(a, " ")
@@ -54,6 +66,8 @@ func DiscordCmdArgsToTask(ainame string, args *CommandArgs) *dfpb.Task {
 			if err == nil {
 				settings.Guidance_scale = float32(v)
 			}
+		case "--upscale", "-U", "--face":
+			upscale = true
 		}
 	}
 
@@ -62,10 +76,40 @@ func DiscordCmdArgsToTask(ainame string, args *CommandArgs) *dfpb.Task {
 	settingstr, _ := json.Marshal(settings)
 	input.Name = &ainame
 	input.Settings = settingstr
-	inputList := []*dfpb.Input{}
-
 	inputList = append(inputList, input)
-	outputList := []*dfpb.Output{}
+
+	if upscale == true {
+		upscaleainame := "ai.realesrgan"
+		inputId := uuid.New().String()
+		input := &dfpb.Input{InputId: &inputId}
+
+		//ModelType
+		upscalesettings := &RealEsrganSettings{}
+		for _, a := range args.Args {
+			item := strings.Split(a, " ")
+			switch item[0] {
+			case "--upscale", "-U":
+				if len(item) == 1 {
+					upscalesettings.ModelType = "general"
+				} else {
+					if item[1] == "g" {
+						upscalesettings.ModelType = "general"
+					} else if item[1] == "a" {
+						upscalesettings.ModelType = "anime"
+					}
+
+				}
+			case "--face":
+				upscalesettings.FaceEnhance = true
+			}
+		}
+
+		settingstr, _ := json.Marshal(upscalesettings)
+		input.Name = &upscaleainame
+		input.Settings = settingstr
+		inputList = append(inputList, input)
+	}
+
 	taskId := uuid.New().String()
 	task := &dfpb.Task{TaskId: &taskId, OutputList: outputList, InputList: inputList}
 	return task

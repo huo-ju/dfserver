@@ -3,15 +3,18 @@ import logging, configparser
 import threading
 from threading import Lock
 import pika
-from PIL import Image
+#from PIL import Image
+import cv2
+import numpy as np
+from basicsr.archs.rrdbnet_arch import RRDBNet
 import df_pb2
 
-from torch import autocast
-import torch
-root_path = os.getcwd()
-sys.path.append(f'{root_path}/diffusers/src')
-from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 
+root_path = os.getcwd()
+sys.path.append(f'{root_path}/Real-ESRGAN')
+
+from realesrgan import RealESRGANer
+from realesrgan.archs.srvgg_arch import SRVGGNetCompact
 
 tasklock = Lock()
 
@@ -22,23 +25,27 @@ logging.basicConfig(
     filemode="w",
 )
 
-def loadmodelpipe():
-
-    lms = LMSDiscreteScheduler(
-        beta_start=0.00085, 
-        beta_end=0.012, 
-        beta_schedule="scaled_linear"
-    )
+def loadmodel():
+    modelname='RealESRGAN_x4plus'
+    model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+    netscale = 4
+    # determine model paths
+    model_path = os.path.join('Real-ESRGAN/experiments/pretrained_models', modelname + '.pth')
+    if not os.path.isfile(model_path):
+        raise ValueError(f'Model {args.model_name} does not exist.')
     
-    model_id = "CompVis/stable-diffusion-v1-4"
-    print("loading {}...".format(model_id))
+    config = {"tile":0, "tile_pad":10, "pre_pad":0}
     
-    pipe = StableDiffusionPipeline.from_pretrained(
-        model_id, 
-        scheduler=lms,
-        use_auth_token=True
-    ).to("cuda")
-    return pipe
+    upsampler = RealESRGANer(
+        scale=netscale,
+        model_path=model_path,
+        model=model,
+        tile=config["tile"],
+        tile_pad=config["tile_pad"],
+        pre_pad=config["pre_pad"],
+        half=True,
+        gpu_id=0)
+    return upsampler
 
 
 class ThreadedConsumer(threading.Thread):
@@ -70,23 +77,24 @@ class ThreadedConsumer(threading.Thread):
 
             task = df_pb2.Task()
             task.ParseFromString(body)
+            #print(task)
 
             err, inputId, mime, data, args = taskRunner(task)
             if err == "":
-                print("AI task Succ, send ack.", inputId, task.TaskId)
+                print("upscaler task Succ, send ack.", inputId, task.TaskId)
                 pbdata, nexttask = repacktask(inputId, mime,  data, task, args)
                 #find next inputtask
                 r = publish(pbdata, channel, nexttask.Name)
                 if r == "":
-                    logging.debug("AI task Succ, send ack.")
+                    logging.debug("upscaler task Succ, send ack.")
                     channel.basic_ack(method.delivery_tag)
                 else:
-                    logging.debug("AI task Err:", r)
+                    logging.debug("upscaler task Err:", r)
                     channel.basic_ack(method.delivery_tag)
             else:
-                print("AI task failure, send nack.", inputId, task.TaskId)
-                logging.debug("AI task failure, send nack")
-                #channel.basic_nack(method.delivery_tag)
+                print("upscaler task failure, send nack.", inputId, task.TaskId)
+                print(err)
+                logging.debug("upscaler task failure, send nack, err:", err)
                 channel.basic_ack(method.delivery_tag)
 
     def run(self):
@@ -95,7 +103,7 @@ class ThreadedConsumer(threading.Thread):
 
 def loadconf():
     config = configparser.ConfigParser()
-    config.read("configs/config.ini")
+    config.read("configs/upscaleconfig.ini")
     return config
 
 
@@ -111,9 +119,9 @@ def taskRunner(task):
         prevoutput = task.OutputList[outputlen-1]
 
     ainame = inputtask.Name
-    if ainame == 'ai.sd14':
+    if ainame == 'ai.realesrgan':
         inputsettings = json.loads(inputtask.Settings)
-        r, mime, data, finalsettings = aiwork(inputsettings)
+        r, mime, data, finalsettings = realesrganwork(prevoutput.Data, inputsettings)
         print("image len:", len(data))
         #build output object and update the task
         args = ""
@@ -139,58 +147,20 @@ def publish(result, channel, taskname):
     else: 
         return "ERR_INVAILD_TASKNAME"
         
-def aiwork(inputsettings):
-    settings = {"height":512, "width":512 , "num_inference_steps":50, "guidance_scale":7.5, "eta":0}
-    if inputsettings['prompt']!="":
-        settings['prompt'] = inputsettings['prompt']
-    if inputsettings['height'] > 0 :
-        settings['height'] = inputsettings['height']
-    if inputsettings['width'] > 0 :
-        settings['width'] = inputsettings['width']
-    if inputsettings['num_inference_steps'] > 0 :
-        settings['num_inference_steps'] = inputsettings['num_inference_steps']
-    if inputsettings['guidance_scale'] > 0 :
-        settings['guidance_scale'] = inputsettings['guidance_scale']
-    if inputsettings['eta'] > 0 :
-        settings['eta'] = inputsettings['eta']
-
-    if 'seed' not in inputsettings or inputsettings['seed'] == 0 :
-        inputsettings['seed'] = random.randint(1000000000, 9999999999)
-
-    customgenerator = torch.Generator(device='cuda')
-    customgenerator = customgenerator.manual_seed(inputsettings['seed'])
-    settings['generator'] = customgenerator
-
-    logging.debug("aiwork with settings:")
-    logging.debug(settings)
+def realesrganwork(inputdata, inputsettings):
+    #TODO: apply user inputsettings instead the default settings
+    settings = inputsettings
     try:
-        with autocast("cuda"):
-            image = pipe(**settings)["sample"][0]  
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-
-        settings.pop('generator', None)
-        settings['seed']= inputsettings['seed']
-        return "", "image/png", img_byte_arr, settings
+        nparr = np.frombuffer(inputdata, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED) 
+        output, _ = upsampler.enhance(image, outscale=4)
+        #save_path = os.path.join(f'output4x.png')
+        img_byte_arr= cv2.imencode('.png', output)[1].tobytes()
+        return "", "image/png", img_byte_arr , settings
     except Exception as e:
-      print(e)
-      return "ERR_AIWORK_FAILURE", "", [], {}
-
-def fakeaiwork(settings):
-    print("*** fake ai working***")
-    print(settings)
-    time.sleep(5)
-    r = random.random()
-    if r < 0.5:
-        #fake result image
-        filename = "output.png"
-        image = Image.open(filename)
-        img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format='PNG')
-        img_byte_arr = img_byte_arr.getvalue()
-        return "", "image/png", img_byte_arr 
-    return "ERR_AIWORK_FAILURE", "", []
+        print("ERR_UPSCALE_FAILURE")
+        print(e)
+        return "ERR_UPSCALE_FAILURE", "", [], {}
 
 def repacktask(inputId, mime, data, task, args):
     r = df_pb2.Output()
@@ -202,14 +172,26 @@ def repacktask(inputId, mime, data, task, args):
     r.Data = data
     r.Args = args
 
-    task.OutputList.append(r)
+    if len(task.OutputList) > 0 : #remove lastoutput.Data
+        last = task.OutputList[len(task.OutputList)-1]
+        lastrd = df_pb2.Output()
+        lastrd.InputId = last.InputId
+        lastrd.Version = last.Version
+        lastrd.ProducerName = last.ProducerName
+        lastrd.ProducerSign = last.ProducerSign
+        lastrd.MimeType = lastrd.MimeType
+        #remove the Data
+        lastrd.Args = last.Args
+        task.OutputList.pop()
+        task.OutputList.append(lastrd)
 
+    task.OutputList.append(r)
     nexttask = task.InputList[len(task.OutputList)]
     output = task.SerializeToString()
     return output, nexttask
 
 cfg = loadconf()
-pipe = loadmodelpipe()
+upsampler = loadmodel()
 
 if __name__ == "__main__":
     queueconfig = cfg["QUEUE"]
