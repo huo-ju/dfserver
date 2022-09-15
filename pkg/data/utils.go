@@ -18,6 +18,37 @@ var ArgsList []string = []string{
 	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
 	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face"}
 
+func CreateImageUpscaleInputTask(data *[]byte) *dfpb.Input {
+	upscaleainame := "ai.realesrgan"
+	inputId := uuid.New().String()
+	input := &dfpb.Input{InputId: &inputId}
+
+	//ModelType
+	upscalesettings := &RealEsrganSettings{}
+	upscalesettings.ModelType = "general"
+
+	settingstr, _ := json.Marshal(upscalesettings)
+	input.Name = &upscaleainame
+	input.Settings = settingstr
+	if data != nil {
+		input.Data = *data
+
+	}
+	return input
+}
+func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
+	var outputlist []*dfpb.Output
+	if ol == nil {
+		outputlist = []*dfpb.Output{}
+	} else {
+		outputlist = ol
+	}
+
+	taskId := uuid.New().String()
+	task := &dfpb.Task{TaskId: &taskId, OutputList: outputlist, InputList: il}
+	return task
+}
+
 func DiscordCmdArgsToTask(args *CommandArgs) *dfpb.Task {
 
 	//create task input and outputlist

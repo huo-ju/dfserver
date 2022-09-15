@@ -19,7 +19,7 @@ func (f *ProcessDiscordWorker) Name() string {
 }
 
 //lastoutput *dfpb.Output
-func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, settingsdata []byte) (bool, error) {
+func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.Input, settingsdata []byte) (bool, error) {
 	var settings map[string]interface{}
 	err := json.Unmarshal(settingsdata, &settings)
 	if err != nil {
@@ -43,6 +43,23 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, settingsdata []by
 		Content:   content,
 		File:      &discordgo.File{Name: "output.png", Reader: r},
 		Reference: ref,
+	}
+
+	if *lastinput.Name == "ai.sd14" {
+		msg.Components = []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.Button{
+						Emoji: discordgo.ComponentEmoji{
+							Name: "🔎",
+						},
+						Label:    "Upscale 4X",
+						CustomID: "bt_upscale",
+						Style:    discordgo.SuccessButton,
+					},
+				},
+			},
+		}
 	}
 
 	f.ds.ReplyMessage(channelid, msg)

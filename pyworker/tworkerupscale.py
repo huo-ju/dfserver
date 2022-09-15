@@ -121,7 +121,14 @@ def taskRunner(task):
     ainame = inputtask.Name
     if ainame == 'ai.realesrgan':
         inputsettings = json.loads(inputtask.Settings)
-        r, mime, data, finalsettings = realesrganwork(prevoutput.Data, inputsettings)
+        data = None
+        if prevoutput != None:
+            data = prevoutput.Data
+        elif inputtask.Data != None:
+            data = inputtask.Data
+        if data == None:
+            return "ERR_NO_INPUT_IMAGE_DATA" , "", "" ,[] ,""
+        r, mime, data, finalsettings = realesrganwork(data, inputsettings)
         print("image len:", len(data))
         #build output object and update the task
         args = ""

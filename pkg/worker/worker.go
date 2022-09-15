@@ -6,5 +6,5 @@ import (
 
 type ProcessWorkerIface interface {
 	Name() string
-	Work(outputList []*dfpb.Output, settings []byte) (bool, error)
+	Work(outputList []*dfpb.Output, lastinput *dfpb.Input, settings []byte) (bool, error)
 }

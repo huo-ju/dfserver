@@ -156,7 +156,8 @@ func StartWorker(ctx context.Context, wrkcfg map[string]data.WorkerItem, amqpQue
 							//d.Nack(false, true)
 							continue
 						}
-						canack, err := wrk.Work(task.OutputList, inputtask.Settings)
+						lastinputtask := task.InputList[len(task.OutputList)-1]
+						canack, err := wrk.Work(task.OutputList, lastinputtask, inputtask.Settings)
 						if err != nil {
 							//TODO: response err
 						}
