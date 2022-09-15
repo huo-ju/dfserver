@@ -94,7 +94,7 @@ Run the dfserver and aiworker on boot, please see the systemd scripts in `deploy
 # TODO
 
 * [] Response error messages to users
-* [] More AI workers, eg: upscale worker 
+* ✔️ More AI workers, eg: upscale worker 
 * [] Multi GPUs worker support
 * [] Initial image
 * [] Mask/Inpaint
