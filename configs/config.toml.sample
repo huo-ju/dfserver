@@ -14,6 +14,14 @@ QUEUE_QOS = 1
 name = "ai.sd14"
 bindkeys = ["all"]
 
+[QUEUE."ai.realesrgan"]
+name = "ai.realesrgan"
+bindkeys = ["all"]
+
+[QUEUE."ai.clipinterrogator"]
+name = "ai.clipinterrogator"
+bindkeys = ["all"]
+
 [QUEUE."process.discord"]
 name = "process.discord"
 bindkeys = ["server1"]

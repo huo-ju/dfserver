@@ -26,19 +26,29 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 		//TODO: save err log
 		return true, err
 	}
-
-	lastoutput := outputList[len(outputList)-1]
-
-	r := bytes.NewReader(lastoutput.Data)
 	messageid := settings["message_id"].(string)
 	channelid := settings["channel_id"].(string)
 	guildid := settings["guild_id"].(string)
-
+	ref := &discordgo.MessageReference{MessageID: messageid, ChannelID: channelid, GuildID: guildid}
 	content := ""
+
+	lastoutput := outputList[len(outputList)-1]
+
+	if *lastoutput.MimeType == "text/plain" {
+
+		content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), *lastoutput.ProducerName)
+		msg := &discordgo.MessageSend{
+			Content:   content,
+			Reference: ref,
+		}
+		f.ds.ReplyMessage(channelid, msg)
+		return true, err
+	}
+
+	r := bytes.NewReader(lastoutput.Data)
 	for _, o := range outputList {
 		content += fmt.Sprintf("%s by %s\r", string(o.Args), *o.ProducerName)
 	}
-	ref := &discordgo.MessageReference{MessageID: messageid, ChannelID: channelid, GuildID: guildid}
 	msg := &discordgo.MessageSend{
 		Content:   content,
 		File:      &discordgo.File{Name: "output.png", Reader: r},
@@ -63,6 +73,5 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 	}
 
 	f.ds.ReplyMessage(channelid, msg)
-
 	return true, err
 }

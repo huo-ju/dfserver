@@ -36,6 +36,21 @@ func CreateImageUpscaleInputTask(data *[]byte) *dfpb.Input {
 	}
 	return input
 }
+
+func CreateInterrogatorInputTask(data *[]byte) *dfpb.Input {
+	ainame := "ai.clipinterrogator"
+	inputId := uuid.New().String()
+	input := &dfpb.Input{InputId: &inputId}
+
+	//ModelType
+	input.Name = &ainame
+	input.Settings = []byte("{}")
+	if data != nil {
+		input.Data = *data
+
+	}
+	return input
+}
 func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
 	var outputlist []*dfpb.Output
 	if ol == nil {

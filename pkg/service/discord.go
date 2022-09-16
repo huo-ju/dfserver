@@ -1,14 +1,12 @@
 package service
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -126,31 +124,43 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 			//TODO, response err message
 		}
 		d.s.ChannelMessageSend(m.ChannelID, "working..."+args.Cmd)
-	} else if strings.HasPrefix(m.Content, "!test ") {
-		m := mc.Message
-		file, _ := os.Open("output.png")
-		r := bufio.NewReader(file)
-		// create messagesend will be move to the worker package
-		msg := &discordgo.MessageSend{
-			Content: "a test msg",
-			File:    &discordgo.File{Name: "output.png", Reader: r},
-			Components: []discordgo.MessageComponent{
-				discordgo.ActionsRow{
-					Components: []discordgo.MessageComponent{
-						discordgo.Button{
-							Emoji: discordgo.ComponentEmoji{
-								Name: "🔎",
-							},
-							Label:    "Upscale 4X",
-							CustomID: "bt_upscale",
-							Style:    discordgo.SuccessButton,
-						},
-					},
-				},
-			},
-			Reference: m.Reference(),
+	} else if strings.HasPrefix(m.Content, "!guess") && len(m.Attachments) > 0 { //bot command
+		att := m.Attachments[0]
+		if att.ContentType == "image/jpeg" || att.ContentType == "image/png" {
+			if att.Size <= 2097152 {
+				//ok build tasks
+				buff, err := DownloadFile(att.ProxyURL)
+				if err == nil {
+					buffbytes := buff.Bytes()
+					inputtask := data.CreateInterrogatorInputTask(&buffbytes)
+					inputList := []*dfpb.Input{inputtask}
+					task := data.CreateTask(inputList, nil)
+					name := "process." + d.servicename
+					data.AddDiscordInputTask(name, m.Reference(), task)
+					body, err := proto.Marshal(task)
+					if err != nil {
+						fmt.Println(err)
+						//TODO, response err message
+					}
+					priority := uint8(1)
+					err = d.amqpQueue.PublishExchangePriority(*task.InputList[0].Name, "all", body, priority)
+					if err != nil {
+						fmt.Println(err)
+						//TODO, response err message
+					}
+					d.s.ChannelMessageSend(m.ChannelID, "guessing...")
+				} else {
+					//TODO, response err message
+					fmt.Println(err)
+				}
+			} else {
+				//TODO, response err message, image must < 2M (2097152)
+			}
+
+		} else {
+
+			//TODO, response err message, not support image format, only support png/jpg
 		}
-		d.s.ChannelMessageSendComplex(m.ChannelID, msg)
 	}
 }
 
