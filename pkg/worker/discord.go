@@ -35,7 +35,6 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 	lastoutput := outputList[len(outputList)-1]
 
 	if *lastoutput.MimeType == "text/plain" {
-
 		content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), *lastoutput.ProducerName)
 		msg := &discordgo.MessageSend{
 			Content:   content,
@@ -45,9 +44,10 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 		return true, err
 	}
 
+	//bot response images
 	r := bytes.NewReader(lastoutput.Data)
 	for _, o := range outputList {
-		content += fmt.Sprintf("%s by %s\r", string(o.Args), *o.ProducerName)
+		content += fmt.Sprintf("!dream %s | by %s\r", string(o.Args), *o.ProducerName)
 	}
 	msg := &discordgo.MessageSend{
 		Content:   content,
@@ -61,7 +61,7 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 				Components: []discordgo.MessageComponent{
 					discordgo.Button{
 						Emoji: discordgo.ComponentEmoji{
-							Name: "🔎",
+							Name: "",
 						},
 						Label:    "Upscale 4X",
 						CustomID: "bt_upscale",

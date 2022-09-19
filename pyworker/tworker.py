@@ -115,15 +115,28 @@ def taskRunner(task):
         inputsettings = json.loads(inputtask.Settings)
         r, mime, data, finalsettings = aiwork(inputsettings)
         print("image len:", len(data))
-        #build output object and update the task
-        args = ""
-        for x, y in finalsettings.items():
-            args = args + "{}:{} ".format(x, y)
+        args = settingsToOutput(inputsettings, finalsettings)
         return r, inputtask.InputId, mime, data, bytes(args, 'utf-8')
     else: 
         #not success, return errr and nack
         return "ERR_NOT_SUPPORT_MODEL" , "", "" ,[] ,""
     
+
+def settingsToOutput(settings, finalsettings):
+    output = settings["prompt"]
+    if settings["height"] != 0:
+        output = output + " -H "+ str(settings["height"])
+    if settings["width"] != 0:
+        output = output + " -W "+ str(settings["width"])
+    if settings["guidance_scale"] != 0:
+        output = output + " -C "+ str(settings["guidance_scale"])
+    if settings["num_inference_steps"] != 0:
+        output = output + " -s "+ str(settings["num_inference_steps"])
+    if settings["seed"] != 0:
+        output = output + " -S "+ str(settings["seed"])
+    else:
+        output = output + " -S "+ str(finalsettings["seed"])
+    return output
 
 def publish(result, channel, taskname):
     l = taskname.split(".")
