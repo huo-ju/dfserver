@@ -25,14 +25,26 @@ bindkeys = ["all"]
 [QUEUE."process.discord"]
 name = "process.discord"
 bindkeys = ["server1"]
+# or if you want support multi discord bots
+# bindkeys = ["server1", "server2"]
+
 
 [WORKER]
 [WORKER."process.discord"]
 name = "process.discord"
-bindkey = "server1"
+bindkeys = ["server1"]
+# or if you want support multi discord bots
+# bindkeys = ["server1", "server2"]
 
 [SERVICE]
 [SERVICE."discord.server1"]
 name = "discord.server1"
-token = "my discord bot token"
+token = "my discord bot1 token"
 prefix = "!"
+
+# or if you want support multi discord bots
+#[SERVICE."discord.server2"]
+#name = "discord.server2"
+#token = "my discord bot2 token"
+#prefix = "!"
+

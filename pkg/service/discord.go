@@ -81,7 +81,7 @@ func (d *DiscordService) Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Println("discord bot is running.")
+	log.Printf("discord bot %s is running.", d.servicename)
 	select {
 	case <-ctx.Done():
 		log.Println("Stop discord bot...")

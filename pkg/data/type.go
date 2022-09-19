@@ -39,6 +39,6 @@ type QueueItem struct {
 }
 
 type WorkerItem struct {
-	Name    string
-	Bindkey string
+	Name     string
+	Bindkeys []string
 }

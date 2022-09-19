@@ -43,7 +43,7 @@ type Config struct {
 	Tls_servername  string
 }
 
-var discordservice *service.DiscordService
+var discordservices map[string]*service.DiscordService
 
 func loadtomlconf(configspath string, filename string) error {
 	f, err := os.Open(fmt.Sprintf("%s/%s", configspath, filename))
@@ -112,6 +112,7 @@ func main() {
 		log.Fatalf("declare queue err %s\n", err)
 	}
 
+	discordservices = make(map[string]*service.DiscordService)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	StartService(ctx, cfg.Service, amqpQueue)
@@ -133,49 +134,50 @@ func main() {
 
 func StartWorker(ctx context.Context, wrkcfg map[string]data.WorkerItem, amqpQueue *rabbitmq.AmqpQueue) {
 	//load all worker
-	workerloader := worker.InitWorkerLoader(discordservice)
+	workerloader := worker.InitWorkerLoader(discordservices)
 
 	for _, v := range wrkcfg {
-		workerQueueMessageChannel, err := amqpQueue.Consume(strings.TrimSpace(v.Name), strings.TrimSpace(v.Bindkey), 1)
-		if err == nil {
-			go func() {
-				for d := range workerQueueMessageChannel {
-					var task dfpb.Task
-					//var lastoutput *dfpb.Output
-					err := proto.Unmarshal(d.Body, &task)
-					if err == nil {
-						inputtask := task.InputList[len(task.OutputList)]
-						if len(task.OutputList) == 0 {
-							//return error
-						}
-						n, _ := data.TaskNameToQNameAndRKey(*inputtask.Name)
-						wrk := workerloader.GetWorker(n)
-						if wrk == nil {
-							log.Println("unsupported worker:", n)
-							//TODO Nack?
-							//d.Nack(false, true)
-							continue
-						}
-						lastinputtask := task.InputList[len(task.OutputList)-1]
-						canack, err := wrk.Work(task.OutputList, lastinputtask, inputtask.Settings)
-						if err != nil {
-							//TODO: response err
-						}
-						if canack == true {
-							d.Ack(false)
+		for _, bindkey := range v.Bindkeys {
+			workerQueueMessageChannel, err := amqpQueue.Consume(strings.TrimSpace(v.Name), strings.TrimSpace(bindkey), 1)
+			if err == nil {
+				go func() {
+					for d := range workerQueueMessageChannel {
+						var task dfpb.Task
+						err := proto.Unmarshal(d.Body, &task)
+						if err == nil {
+							inputtask := task.InputList[len(task.OutputList)]
+							if len(task.OutputList) == 0 {
+								//return error
+							}
+							n, workerkey := data.TaskNameToQNameAndRKey(*inputtask.Name)
+							wrk := workerloader.GetWorker(n, workerkey)
+							if wrk == nil {
+								log.Println("unsupported worker:", n)
+								//TODO Nack?
+								//d.Nack(false, true)
+								continue
+							}
+							lastinputtask := task.InputList[len(task.OutputList)-1]
+							canack, err := wrk.Work(task.OutputList, lastinputtask, inputtask.Settings)
+							if err != nil {
+								//TODO: response err
+							}
+							if canack == true {
+								d.Ack(false)
+							} else {
+								d.Nack(false, true)
+							}
 						} else {
-							d.Nack(false, true)
+							//TODO: response err
+							d.Ack(false)
 						}
-					} else {
-						//TODO: response err
-						d.Ack(false)
 					}
-				}
-				log.Println("routine channel closed, exit")
-				return
-			}()
-		} else {
-			log.Printf("amqp Consume queue %s key %s err: %s", strings.TrimSpace(v.Name), strings.TrimSpace(v.Bindkey), err)
+					log.Println("routine channel closed, exit")
+					return
+				}()
+			} else {
+				log.Printf("amqp Consume queue %s key %s err: %s", strings.TrimSpace(v.Name), strings.TrimSpace(bindkey), err)
+			}
 		}
 	}
 }
@@ -185,9 +187,10 @@ func StartService(ctx context.Context, servicecfg map[string]map[string]string, 
 		servicename := v["name"]
 		discordToken := v["token"]
 		discordPrefix := v["prefix"]
-		discordservice = service.NewDiscordService(servicename, discordToken, discordPrefix, amqpQueue)
+		newdiscordservice := service.NewDiscordService(servicename, discordToken, discordPrefix, amqpQueue)
+		discordservices[servicename] = newdiscordservice
 		go func() {
-			err := discordservice.Start(ctx)
+			err := discordservices[servicename].Start(ctx)
 			if err != nil {
 				log.Fatalln("StartService discord:", err)
 			}
