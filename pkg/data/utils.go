@@ -18,6 +18,12 @@ var ArgsList []string = []string{
 	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
 	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face"}
 
+const (
+	max_steps  = 150
+	max_width  = 1024
+	max_height = 1024
+)
+
 func CreateImageUpscaleInputTask(data *[]byte) *dfpb.Input {
 	upscaleainame := "ai.realesrgan"
 	inputId := uuid.New().String()
@@ -85,11 +91,18 @@ func DiscordCmdArgsToTask(args *CommandArgs) *dfpb.Task {
 		case "--height", "-H":
 			v, err := strconv.ParseUint(item[1], 10, 32)
 			if err == nil {
+				if uint(v) > max_height {
+					v = 512 //set default value
+				}
+
 				settings.Height = uint(v)
 			}
 		case "--width", "-W":
 			v, err := strconv.ParseUint(item[1], 10, 32)
 			if err == nil {
+				if uint(v) > max_width {
+					v = 512 //set default value
+				}
 				settings.Width = uint(v)
 			}
 		case "--number", "-n":
@@ -100,6 +113,9 @@ func DiscordCmdArgsToTask(args *CommandArgs) *dfpb.Task {
 		case "--steps", "-s":
 			v, err := strconv.ParseUint(item[1], 10, 32)
 			if err == nil {
+				if uint(v) > max_steps {
+					v = 50 //set default value
+				}
 				settings.NumInferenceSteps = uint(v)
 			}
 		case "--seed", "-S":

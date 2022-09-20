@@ -1,6 +1,15 @@
 # dfserver
 
-dfserver is a distributed backend AI pipeline server. The initial purpose of this project was to build a self-hosted distributed GPU cluster to run the [stable diffusion](https://stability.ai/blog/stable-diffusion-public-release) model, but it has a potential to expend to general AI models, or large-scale production service.
+DFserver is a open-sourced distributed backend AI pipeline server for building self-hosted distributed GPU cluster to run the [Stable Diffusion](https://stability.ai/blog/stable-diffusion-public-release) model, but also has a potential to expend to general AI image or prompt generative models, large-scale production service, and etc.
+
+Give us a star and your valuable feedback :)
+
+The service can uses idle fancy GPUs shared by your friends to form computational clusters for running various AI models or just be deployed on your own computer. In the future we will support counting and distributing possible revenue based on the workload of each GPU (Worker).
+
+I have a beautiful vision for DFserver, which can be an enterprise-level service application that can flexibly extend the pipeline to connect models for different tasks in the AI image generation workflow, such as DeepL for supporting multi language prompt input, or Gobig by DD for filling more rendering details while upscale, or even prompt building targeted fine-tune GPT model.
+
+Will soon support the generation of multiple images with a single command, and functions related to init-image.
+
 
 ![](public/images/demo.png)
 
@@ -102,4 +111,5 @@ Run the dfserver and aiworker on boot, please see the systemd scripts in `deploy
 # Credits
 
 - [stability.ai](https://stability.ai/)
+- [pharmapsychotic](https://github.com/pharmapsychotic/clip-interrogator) for clip-interrogator
 - @[catmus](https://twitter.com/recatm)
