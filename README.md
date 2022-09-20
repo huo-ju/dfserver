@@ -10,8 +10,8 @@ I have a beautiful vision for DFserver, which can be an enterprise-level service
 
 Will soon support the generation of multiple images with a single command, and functions related to init-image.
 
-
-![](public/images/demo.png)
+![](public/images/demo1.png)
+![](public/images/demo2.png)
 
 # System Topology
 
