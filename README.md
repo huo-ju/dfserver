@@ -75,14 +75,22 @@ git clone https://github.com/huggingface/diffusers.git
 ### AI Worker Configuration
 
 ```bash
-cp configs/config.ini.sample configs/config.ini
+cp configs/config.ini.sample configs/sd14_config.ini 
+#or
+cp configs/config.ini.sample configs/realesrgan_config.ini
+#or
+cp configs/config.ini.sample configs/clipinterrogator_config.ini
 ```
 
 Edit the config.ini, setup the username/password/host address/port of the rabbitmq.
 
 ### Run the ai worker
 ```bash
-python tworker.py
+python worker.py sd14 #stable-diffusion worker
+#or
+python worker.py realesrgan #realesrgan upscaling worker
+#or
+python worker.py clipinterrogator # clip-interrogator worker
 ```
 
 ### Useage
