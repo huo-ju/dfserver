@@ -32,7 +32,7 @@ def loadmodel():
     # determine model paths
     model_path = os.path.join('Real-ESRGAN/experiments/pretrained_models', modelname + '.pth')
     if not os.path.isfile(model_path):
-        raise ValueError(f'Model {args.model_name} does not exist.')
+        raise ValueError(f'Model {modelname} does not exist.')
     
     config = {"tile":0, "tile_pad":10, "pre_pad":0}
     
