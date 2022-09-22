@@ -70,7 +70,7 @@ func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
 	return task
 }
 
-func DiscordCmdArgsToTask(args *CommandArgs) *dfpb.Task {
+func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
 
 	//create task input and outputlist
 	inputList := []*dfpb.Input{}
@@ -119,6 +119,9 @@ func DiscordCmdArgsToTask(args *CommandArgs) *dfpb.Task {
 				settings.NumInferenceSteps = uint(v)
 			}
 		case "--seed", "-S":
+			if removeseed == true {
+				continue
+			}
 			v, err := strconv.ParseUint(item[1], 10, 64)
 			if err == nil {
 				settings.Seed = uint64(v)

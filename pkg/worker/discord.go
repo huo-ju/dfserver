@@ -67,6 +67,14 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 						CustomID: "bt_upscale",
 						Style:    discordgo.SuccessButton,
 					},
+					discordgo.Button{
+						Emoji: discordgo.ComponentEmoji{
+							Name: "",
+						},
+						Label:    "New Variant",
+						CustomID: "bt_newvar",
+						Style:    discordgo.SuccessButton,
+					},
 				},
 			},
 		}

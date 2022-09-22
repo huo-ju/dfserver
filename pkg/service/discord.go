@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -74,6 +75,35 @@ func (d *DiscordService) Start(ctx context.Context) error {
 			if err != nil {
 				//TODO: error handle
 			}
+		} else if i.MessageComponentData().CustomID == "bt_newvar" {
+			fmt.Println(i.Message.Content)
+			//remove by and sig
+			var re = regexp.MustCompile("\\| by.+$")
+			content := re.ReplaceAllString(i.Message.Content, "")
+			args := data.ArgsParse(content, data.ArgsList)
+			//remove seed
+			task := data.DiscordCmdArgsToTask(args, true)
+			name := "process." + d.servicename
+			data.AddDiscordInputTask(name, i.Message.MessageReference, task)
+
+			body, err := proto.Marshal(task)
+			if err != nil {
+				fmt.Println(err)
+				//TODO, response err message
+			}
+			priority := uint8(1)
+			err = d.amqpQueue.PublishExchangePriority(*task.InputList[0].Name, "all", body, priority)
+			if err != nil {
+				fmt.Println(err)
+				//TODO, response err message
+			}
+
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "new variant generating",
+				},
+			})
 		}
 	})
 	d.s.Identify.Intents = discordgo.IntentsGuildMessages
@@ -108,7 +138,7 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 	}
 	if strings.HasPrefix(m.Content, "!dream ") { //bot command
 		args := data.ArgsParse(m.Content, data.ArgsList)
-		task := data.DiscordCmdArgsToTask(args)
+		task := data.DiscordCmdArgsToTask(args, false)
 		name := "process." + d.servicename
 		data.AddDiscordInputTask(name, m.Reference(), task)
 
