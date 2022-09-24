@@ -56,23 +56,15 @@ class ThreadedConsumer(threading.Thread):
             task.ParseFromString(body)
 
             err, inputId, mime, data, args = taskRunner(task)
-            if err == "":
-                print("AI task Succ, send ack.", inputId, task.TaskId)
-                pbdata, nexttask = repacktask(inputId, mime, data, task, args)
-                # find next inputtask
-                r = publish(pbdata, channel, nexttask.Name)
-                if r == "":
-                    logging.debug("AI task Succ, send ack.")
-                    channel.basic_ack(method.delivery_tag)
-                else:
-                    logging.debug("AI task Err:", r)
-                    channel.basic_ack(method.delivery_tag)
+            print("AI task Succ, send ack.", inputId, task.TaskId)
+            pbdata, nexttask = repacktask(inputId, mime, data, task, args, err)
+            # find next inputtask
+            r = publish(pbdata, channel, nexttask.Name)
+            if r == "":
+                logging.debug("AI task Succ, send ack.")
             else:
-                print("AI task failure, send nack.", inputId, task.TaskId)
-                print(err)
-                logging.debug("AI task failure, send nack")
-                # channel.basic_nack(method.delivery_tag)
-                channel.basic_ack(method.delivery_tag)
+                logging.debug("AI task Err:", r)
+            channel.basic_ack(method.delivery_tag)
 
     def run(self):
         print("start thread:", self.tid)
@@ -100,7 +92,6 @@ def taskRunner(task):
     ainame = inputtask.Name
     if ainame == workername:
         inputsettings = json.loads(inputtask.Settings)
-        # r, mime, data, finalsettings = worker.work(inputsettings)
         r, mime, data, finalsettings = worker.work(inputtask, prevoutput)
         print("image len:", len(data))
         args = worker.settingsToOutput(inputsettings, finalsettings)
@@ -141,22 +132,25 @@ def publish(result, channel, taskname):
 #    return "ERR_AIWORK_FAILURE", "", []
 
 
-def repacktask(inputId, mime, data, task, args):
+def repacktask(inputId, mime, data, task, args, error):
     r = df_pb2.Output()
     r.InputId = inputId
     r.Version = 1
     r.ProducerName = cfg["WORKER"]["NAME"]
     r.ProducerSign = "mysig_taskid_userid"
-    r.MimeType = mime
-    r.Data = data
-    r.Args = args
+    if error == "":
+        r.MimeType = mime
+        r.Data = data
+        r.Args = args
+    else:
+        r.MimeType = "text/plain"
+        r.Error = error
 
     task.OutputList.append(r)
 
     nexttask = task.InputList[len(task.OutputList)]
     output = task.SerializeToString()
     return output, nexttask
-
 
 if __name__ == "__main__":
     global workername, cfg, worker

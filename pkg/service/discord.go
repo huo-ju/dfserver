@@ -184,11 +184,23 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 					fmt.Println(err)
 				}
 			} else {
+				content := "Error: the  maximum supported image size is 2MB"
+				msg := &discordgo.MessageSend{
+					Content:   content,
+					Reference: m.Reference(),
+				}
+				d.ReplyMessage(m.ChannelID, msg)
+
 				//TODO, response err message, image must < 2M (2097152)
 			}
 
 		} else {
-
+			content := "Error: only support png and jpg image"
+			msg := &discordgo.MessageSend{
+				Content:   content,
+				Reference: m.Reference(),
+			}
+			d.ReplyMessage(m.ChannelID, msg)
 			//TODO, response err message, not support image format, only support png/jpg
 		}
 	}

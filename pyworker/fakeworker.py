@@ -1,12 +1,8 @@
 import os, sys, io, logging
 
 root_path = os.getcwd()
-sys.path.append(f"{root_path}/diffusers/src")
-from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 import json
 import random
-from torch import autocast
-import torch
 
 
 logging.basicConfig(
@@ -22,18 +18,8 @@ class Worker:
         self.device = device
 
     def loadmodel(self):
-        lms = LMSDiscreteScheduler(
-            beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear"
-        )
+        print("loading fake model...")
 
-        model_id = "CompVis/stable-diffusion-v1-4"
-        print("loading {}...".format(model_id))
-
-        self.pipe = StableDiffusionPipeline.from_pretrained(
-            model_id, scheduler=lms, use_auth_token=True
-        ).to("cuda")
-
-    # def work(self, inputsettings):
     def work(self, inputtask, prevoutput):
         inputsettings = json.loads(inputtask.Settings)
         settings = {
@@ -59,25 +45,19 @@ class Worker:
         if "seed" not in inputsettings or inputsettings["seed"] == 0:
             inputsettings["seed"] = random.randint(1000000000, 9999999999)
 
-        customgenerator = torch.Generator(device="cuda")
-        customgenerator = customgenerator.manual_seed(inputsettings["seed"])
-        settings["generator"] = customgenerator
 
         logging.debug("aiwork with settings:")
         logging.debug(settings)
-        try:
-            with autocast("cuda"):
-                image = self.pipe(**settings)["sample"][0]
-            img_byte_arr = io.BytesIO()
-            image.save(img_byte_arr, format="PNG")
-            img_byte_arr = img_byte_arr.getvalue()
 
-            settings.pop("generator", None)
-            settings["seed"] = inputsettings["seed"]
-            return "", "image/png", img_byte_arr, settings
+        try:
+            #raise Exception("a test message") #test error message response
+            with open("output.png", "rb") as fh:
+                buf = io.BytesIO(fh.read())
+                settings["seed"] = inputsettings["seed"]
+                return "", "image/png", buf.getvalue(), settings
         except Exception as e:
             print(e)
-            return "ERR_AIWORK_FAILURE", "", [], {}
+            return "ERR_AIWORK_FAILURE: {}".format(e), "",bytes() , {}
 
     def settingsToOutput(self, settings, finalsettings):
         output = settings["prompt"]

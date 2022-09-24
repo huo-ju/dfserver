@@ -35,7 +35,11 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 	lastoutput := outputList[len(outputList)-1]
 
 	if *lastoutput.MimeType == "text/plain" {
-		content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), *lastoutput.ProducerName)
+		if lastoutput.Error != nil {
+			content = fmt.Sprintf("Error: %s by %s\r", *lastoutput.Error, *lastoutput.ProducerName)
+		} else {
+			content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), *lastoutput.ProducerName)
+		}
 		msg := &discordgo.MessageSend{
 			Content:   content,
 			Reference: ref,

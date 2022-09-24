@@ -66,7 +66,7 @@ class Worker:
         elif inputtask.Data != None:
             data = inputtask.Data
         if data == None:
-            return "ERR_NO_INPUT_IMAGE_DATA", "", "", [], ""
+            return "ERR_NO_INPUT_IMAGE_DATA}", "",bytes() , {}
 
         try:
             nparr = np.frombuffer(data, np.uint8)
@@ -77,7 +77,7 @@ class Worker:
         except Exception as e:
             print("ERR_UPSCALE_FAILURE")
             print(e)
-            return "ERR_UPSCALE_FAILURE", "", [], {}
+            return "ERR_UPSCALE_FAILURE: {}".format(e), "", bytes(), {}
 
     def settingsToOutput(self, settings, finalsettings):
         return ""
