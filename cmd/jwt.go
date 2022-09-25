@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
