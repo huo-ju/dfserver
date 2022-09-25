@@ -91,11 +91,14 @@ def taskRunner(task):
 
     ainame = inputtask.Name
     if ainame == workername:
-        inputsettings = json.loads(inputtask.Settings)
-        r, mime, data, finalsettings = worker.work(inputtask, prevoutput)
-        print("image len:", len(data))
-        args = worker.settingsToOutput(inputsettings, finalsettings)
-        return r, inputtask.InputId, mime, data, bytes(args, "utf-8")
+        try:
+            inputsettings = json.loads(inputtask.Settings)
+            r, mime, data, finalsettings = worker.work(inputtask, prevoutput)
+            print("image len:", len(data))
+            args = worker.settingsToOutput(inputsettings, finalsettings)
+            return r, inputtask.InputId, mime, data, bytes(args, "utf-8")
+        except Exception as e:
+            return "error: {}".format(e), "", "", [], ""
     else:
         # not success, return errr and nack
         return "ERR_NOT_SUPPORT_MODEL", "", "", [], ""
@@ -114,23 +117,6 @@ def publish(result, channel, taskname):
         return ""
     else:
         return "ERR_INVAILD_TASKNAME"
-
-
-# def fakeaiwork(settings):
-#    print("*** fake ai working***")
-#    print(settings)
-#    time.sleep(5)
-#    r = random.random()
-#    if r < 0.5:
-#        #fake result image
-#        filename = "output.png"
-#        image = Image.open(filename)
-#        img_byte_arr = io.BytesIO()
-#        image.save(img_byte_arr, format='PNG')
-#        img_byte_arr = img_byte_arr.getvalue()
-#        return "", "image/png", img_byte_arr
-#    return "ERR_AIWORK_FAILURE", "", []
-
 
 def repacktask(inputId, mime, data, task, args, error):
     r = df_pb2.Output()
