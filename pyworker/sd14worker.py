@@ -7,6 +7,8 @@ import json
 import random
 from torch import autocast
 import torch
+from patch.dummychecker import DummySafetyChecker  # , DummyFeatureExtractor
+import patch.dummychecker as dummychecker
 
 
 logging.basicConfig(
@@ -32,22 +34,42 @@ class Worker:
         )
 
         usefp16 = False
+        usesafetychecker = True
 
         if "USE_FP16" in config:
             if config["USE_FP16"].lower() == "true":
                 usefp16 = True
 
+        if "USE_SAFETYCHECKER" in config:
+            if config["USE_SAFETYCHECKER"].lower() == "false":
+                usesafetychecker = False
+
         model_id = "CompVis/stable-diffusion-v1-4"
+
+        safechecker = DummySafetyChecker().safety_checker
+        if usesafetychecker == True:
+            from diffusers.pipelines.stable_diffusion import (
+                StableDiffusionSafetyChecker,
+            )
+
+            safechecker = StableDiffusionSafetyChecker.from_pretrained(
+                "CompVis/stable-diffusion-safety-checker"
+            )
+
         if usefp16 == True:
             self.pipe = StableDiffusionPipeline.from_pretrained(
-                model_id,  revision="fp16", torch_dtype=torch.float16, 
-                scheduler=lms, use_auth_token=True).to("cuda")
+                model_id,
+                revision="fp16",
+                torch_dtype=torch.float16,
+                scheduler=lms,
+                safety_checker=safechecker,
+                use_auth_token=True,
+            ).to("cuda")
         else:
             self.pipe = StableDiffusionPipeline.from_pretrained(
-                model_id, scheduler=lms, use_auth_token=True
+                model_id, scheduler=lms, safety_checker=safechecker, use_auth_token=True
             ).to("cuda")
 
-    # def work(self, inputsettings):
     def work(self, inputtask, prevoutput):
         inputsettings = json.loads(inputtask.Settings)
         settings = {
