@@ -148,7 +148,11 @@ if __name__ == "__main__":
     cfg = loadconf(loadworkername)
 
     workermodule = importlib.import_module(loadworkername + "worker")
-    worker = workermodule.Worker("cuda:0", {})
+    modelcfg = {}
+    if "MODEL" in cfg:
+        modelcfg = cfg["MODEL"]
+
+    worker = workermodule.Worker("cuda:0", {"config": modelcfg})
     worker.loadmodel()
     queueconfig = cfg["QUEUE"]
     workername = queueconfig["WORKER_NAME"]

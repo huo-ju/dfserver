@@ -20,18 +20,32 @@ logging.basicConfig(
 class Worker:
     def __init__(self, device, args):
         self.device = device
+        self.args = args
 
     def loadmodel(self):
+        config = {}
+        if "config" in self.args:
+            config = self.args["config"]
+
         lms = LMSDiscreteScheduler(
             beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear"
         )
 
-        model_id = "CompVis/stable-diffusion-v1-4"
-        print("loading {}...".format(model_id))
+        usefp16 = False
 
-        self.pipe = StableDiffusionPipeline.from_pretrained(
-            model_id, scheduler=lms, use_auth_token=True
-        ).to("cuda")
+        if "USE_FP16" in config:
+            if config["USE_FP16"].lower() == "true":
+                usefp16 = True
+
+        model_id = "CompVis/stable-diffusion-v1-4"
+        if usefp16 == True:
+            self.pipe = StableDiffusionPipeline.from_pretrained(
+                model_id,  revision="fp16", torch_dtype=torch.float16, 
+                scheduler=lms, use_auth_token=True).to("cuda")
+        else:
+            self.pipe = StableDiffusionPipeline.from_pretrained(
+                model_id, scheduler=lms, use_auth_token=True
+            ).to("cuda")
 
     # def work(self, inputsettings):
     def work(self, inputtask, prevoutput):
