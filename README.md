@@ -75,11 +75,11 @@ git clone https://github.com/huggingface/diffusers.git
 ### AI Worker Configuration
 
 ```bash
-cp configs/config.ini.sample configs/sd14_config.ini 
+cp configs/sd14_config.ini.sample configs/sd14_config.ini 
 #or
-cp configs/config.ini.sample configs/realesrgan_config.ini
+cp configs/realesrgan_config.ini.sample configs/realesrgan_config.ini
 #or
-cp configs/config.ini.sample configs/clipinterrogator_config.ini
+cp configs/clipinterrogator_config.ini.sample configs/clipinterrogator_config.ini
 ```
 
 Edit the config.ini, setup the username/password/host address/port of the rabbitmq.
@@ -110,8 +110,8 @@ Run the dfserver and aiworker on boot, please see the systemd scripts in `deploy
 
 # TODO
 
-* [] Response error messages to users
-* ✔️ More AI workers, eg: upscale worker 
+* ✔️  Response error messages to users
+* ✔️  More AI workers, eg: upscale worker 
 * [] Multi GPUs worker support
 * [] Initial image
 * [] Mask/Inpaint
