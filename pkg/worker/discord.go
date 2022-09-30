@@ -61,6 +61,9 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 	if len(filename) > 250 { //max filename length 250
 		filename = filename[len(filename)-250:]
 	}
+	if len(filename) == 0 {
+		filename = "output"
+	}
 
 	msg := &discordgo.MessageSend{
 		Content:   content,
