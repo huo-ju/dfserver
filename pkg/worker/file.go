@@ -39,7 +39,7 @@ func (f *ProcessFileWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.Inpu
 	if ok == false {
 		filename = uuid.New().String()
 	}
-	ext := mimeTofileext(*lastoutput.MimeType)
+	ext := mimeTofileext(lastoutput.MimeType)
 	err = os.WriteFile(fmt.Sprintf("output-%s%s", filename, ext), lastoutput.Data, 0644)
 	//TODO: save err log
 	return true, err

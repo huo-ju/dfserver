@@ -27,14 +27,14 @@ const (
 func CreateImageUpscaleInputTask(data *[]byte) *dfpb.Input {
 	upscaleainame := "ai.realesrgan"
 	inputId := uuid.New().String()
-	input := &dfpb.Input{InputId: &inputId}
+	input := &dfpb.Input{InputId: inputId}
 
 	//ModelType
 	upscalesettings := &RealEsrganSettings{}
 	upscalesettings.ModelType = "general"
 
 	settingstr, _ := json.Marshal(upscalesettings)
-	input.Name = &upscaleainame
+	input.Name = upscaleainame
 	input.Settings = settingstr
 	if data != nil {
 		input.Data = *data
@@ -46,10 +46,10 @@ func CreateImageUpscaleInputTask(data *[]byte) *dfpb.Input {
 func CreateInterrogatorInputTask(data *[]byte) *dfpb.Input {
 	ainame := "ai.clipinterrogator"
 	inputId := uuid.New().String()
-	input := &dfpb.Input{InputId: &inputId}
+	input := &dfpb.Input{InputId: inputId}
 
 	//ModelType
-	input.Name = &ainame
+	input.Name = ainame
 	input.Settings = []byte("{}")
 	if data != nil {
 		input.Data = *data
@@ -66,7 +66,7 @@ func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
 	}
 
 	taskId := uuid.New().String()
-	task := &dfpb.Task{TaskId: &taskId, OutputList: outputlist, InputList: il}
+	task := &dfpb.Task{TaskId: taskId, OutputList: outputlist, InputList: il}
 	return task
 }
 
@@ -137,16 +137,16 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
 	}
 
 	inputId := uuid.New().String()
-	input := &dfpb.Input{InputId: &inputId}
+	input := &dfpb.Input{InputId: inputId}
 	settingstr, _ := json.Marshal(settings)
-	input.Name = &ainame
+	input.Name = ainame
 	input.Settings = settingstr
 	inputList = append(inputList, input)
 
 	if upscale == true {
 		upscaleainame := "ai.realesrgan"
 		inputId := uuid.New().String()
-		input := &dfpb.Input{InputId: &inputId}
+		input := &dfpb.Input{InputId: inputId}
 
 		//ModelType
 		upscalesettings := &RealEsrganSettings{}
@@ -170,22 +170,22 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
 		}
 
 		settingstr, _ := json.Marshal(upscalesettings)
-		input.Name = &upscaleainame
+		input.Name = upscaleainame
 		input.Settings = settingstr
 		inputList = append(inputList, input)
 	}
 
 	taskId := uuid.New().String()
-	task := &dfpb.Task{TaskId: &taskId, OutputList: outputList, InputList: inputList}
+	task := &dfpb.Task{TaskId: taskId, OutputList: outputList, InputList: inputList}
 	return task
 }
 
 func AddDiscordInputTask(name string, reference *discordgo.MessageReference, task *dfpb.Task) {
 	inputId := uuid.New().String()
-	input := &dfpb.Input{InputId: &inputId}
+	input := &dfpb.Input{InputId: inputId}
 	settingstr, _ := json.Marshal(reference)
 	input.Settings = settingstr
-	input.Name = &name
+	input.Name = name
 	task.InputList = append(task.InputList, input)
 }
 
@@ -200,7 +200,7 @@ func JsonToTask(body *[]byte) (*dfpb.Task, error) {
 			mv, ok := v.(map[string]interface{})
 			if ok == true {
 				inputId := uuid.New().String()
-				input := &dfpb.Input{InputId: &inputId}
+				input := &dfpb.Input{InputId: inputId}
 				settingstr, ok := mv["settings"].(string)
 				if ok == true {
 					input.Settings = []byte(settingstr)
@@ -208,7 +208,7 @@ func JsonToTask(body *[]byte) (*dfpb.Task, error) {
 
 				namestr, ok := mv["name"].(string)
 				if ok == true {
-					input.Name = &namestr
+					input.Name = namestr
 				}
 
 				inputList = append(inputList, input)
@@ -218,7 +218,7 @@ func JsonToTask(body *[]byte) (*dfpb.Task, error) {
 		}
 		task.InputList = inputList
 		taskId := uuid.New().String()
-		task.TaskId = &taskId
+		task.TaskId = taskId
 		return task, nil
 	}
 	return nil, err

@@ -35,11 +35,11 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 
 	lastoutput := outputList[len(outputList)-1]
 
-	if *lastoutput.MimeType == "text/plain" {
-		if lastoutput.Error != nil {
-			content = fmt.Sprintf("Error: %s by %s\r", *lastoutput.Error, *lastoutput.ProducerName)
+	if lastoutput.MimeType == "text/plain" {
+		if lastoutput.Error != "" {
+			content = fmt.Sprintf("Error: %s by %s\r", lastoutput.Error, lastoutput.ProducerName)
 		} else {
-			content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), *lastoutput.ProducerName)
+			content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), lastoutput.ProducerName)
 		}
 		msg := &discordgo.MessageSend{
 			Content:   content,
@@ -53,7 +53,7 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 	r := bytes.NewReader(lastoutput.Data)
 	filename := ""
 	for _, o := range outputList {
-		content += fmt.Sprintf("!dream %s | by %s\r", string(o.Args), *o.ProducerName)
+		content += fmt.Sprintf("!dream %s | by %s\r", string(o.Args), o.ProducerName)
 		filename += string(o.Args)
 	}
 
@@ -71,7 +71,7 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 		Reference: ref,
 	}
 
-	if *lastinput.Name == "ai.sd14" {
+	if lastinput.Name == "ai.sd14" {
 		msg.Components = []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{

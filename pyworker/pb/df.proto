@@ -1,27 +1,27 @@
-syntax = "proto2";
+syntax = "proto3";
 package dfserver.pb;
 option go_package = "github.com/huo-ju/dfserver/pkg/pb";
 
 message Output {
-    required string  InputId            = 1;
-    required int32   Version            = 2;
-    required string  ProducerName       = 3;
-    optional string  ProducerSign       = 4;
-    optional string  MimeType           = 5;
-    optional bytes   Data               = 6;
-    optional bytes   Args               = 7;
-    optional string  Error              = 8;
+    string  InputId            = 1;
+    int32   Version            = 2;
+    string  ProducerName       = 3;
+    string  ProducerSign       = 4;
+    string  MimeType           = 5;
+    bytes   Data               = 6;
+    bytes   Args               = 7;
+    string  Error              = 8;
 }
 
 message Input {
-    required string InputId             = 1;
-    required string Name                = 2;
-    required bytes  Settings            = 3;
-    optional bytes  Data               = 4;
+    string InputId             = 1;
+    string Name                = 2;
+    bytes  Settings            = 3;
+    bytes  Data               = 4;
 }
 
 message Task {
-    required string  TaskId             = 1;
+    string  TaskId             = 1;
     repeated Output OutputList          = 2;
     repeated Input InputList            = 3;
 }

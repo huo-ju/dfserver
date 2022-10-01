@@ -149,7 +149,7 @@ func StartWorker(ctx context.Context, wrkcfg map[string]data.WorkerItem, amqpQue
 							if len(task.OutputList) == 0 {
 								//return error
 							}
-							n, workerkey := data.TaskNameToQNameAndRKey(*inputtask.Name)
+							n, workerkey := data.TaskNameToQNameAndRKey(inputtask.Name)
 							wrk := workerloader.GetWorker(n, workerkey)
 							if wrk == nil {
 								log.Println("unsupported worker:", n)
