@@ -52,6 +52,11 @@ End:
 					s = StatusCmd
 					indexargstart = len(input)
 				}
+			} else if c == '|' {
+				if i-indexargstart == 2 { // xxxx:-1|, is not a args
+					indexargstart = len(input) //recovery the init value
+					s = StatusCmd
+				}
 			}
 		}
 	}

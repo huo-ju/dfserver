@@ -16,7 +16,8 @@ import (
 var ArgsList []string = []string{
 	"-h", "--help", "--tokenize", "-t", "--height", "-H", "--width", "-W",
 	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
-	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face"}
+	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face",
+	"--negative", "-v"}
 
 const (
 	max_steps  = 150

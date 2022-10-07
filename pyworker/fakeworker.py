@@ -3,6 +3,7 @@ import os, sys, io, logging
 root_path = os.getcwd()
 import json
 import random
+import promptutils
 
 
 logging.basicConfig(
@@ -30,7 +31,19 @@ class Worker:
             "eta": 0,
         }
         if inputsettings["prompt"] != "":
-            settings["prompt"] = inputsettings["prompt"]
+            segs = promptutils.promptToSegs(inputsettings["prompt"])
+            for seg in segs:
+                print(seg)
+                if seg["weight"]<0:
+                    if "negative_prompt" not in settings:
+                        settings["negative_prompt"] = seg["seg"]
+                    else:
+                        settings["negative_prompt"] += " " + seg["seg"] 
+                else: 
+                    if "prompt" not in settings:
+                        settings["prompt"] = seg["seg"]
+                    else:
+                        settings["prompt"] += " " + seg["seg"]
         if inputsettings["height"] > 0:
             settings["height"] = inputsettings["height"]
         if inputsettings["width"] > 0:

@@ -76,7 +76,6 @@ func (d *DiscordService) Start(ctx context.Context) error {
 				//TODO: error handle
 			}
 		} else if i.MessageComponentData().CustomID == "bt_newvar" {
-			fmt.Println(i.Message.Content)
 			//remove by and sig
 			var re = regexp.MustCompile("\\| by.+$")
 			content := re.ReplaceAllString(i.Message.Content, "")

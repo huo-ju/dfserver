@@ -8,7 +8,7 @@ func TestParse(t *testing.T) {
 	argslist := []string{
 		"-h", "--help", "--tokenize", "-t", "--height", "-H", "--width", "-W",
 		"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
-		"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p"}
+		"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--negative", "-v"}
 
 	cmd0 := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, loundraw and dan mumford"
 	cmd0_cmd := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, loundraw and dan mumford"
@@ -45,6 +45,18 @@ func TestParse(t *testing.T) {
 	cmd5_args := []string{"-n 4", "-U", "--face"}
 	args = ArgsParse(cmd5, argslist)
 	verifyargs(t, args, cmd5_cmd, cmd5_args)
+
+	cmd6 := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-1|"
+	cmd6_cmd := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-1|"
+	cmd6_args := []string{}
+	args = ArgsParse(cmd6, argslist)
+	verifyargs(t, args, cmd6_cmd, cmd6_args)
+
+	cmd7 := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-1| -n 4"
+	cmd7_cmd := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-1|"
+	cmd7_args := []string{"-n 4"}
+	args = ArgsParse(cmd7, argslist)
+	verifyargs(t, args, cmd7_cmd, cmd7_args)
 }
 
 func verifyargs(t *testing.T, args *CommandArgs, rcmd string, rargs []string) {
@@ -52,13 +64,14 @@ func verifyargs(t *testing.T, args *CommandArgs, rcmd string, rargs []string) {
 		t.Errorf("parse cmd err, \nexpect: (%d) %s\nresult: (%d) %s", len(rcmd), rcmd, len(args.Cmd), args.Cmd)
 	}
 	argok := true
-	if len(args.Args) != len(rargs) {
-		argok = false
-	}
-	for i, v := range args.Args {
-		if v != rargs[i] {
-			argok = false
+	if len(args.Args) == len(rargs) {
+		for i, v := range args.Args {
+			if v != rargs[i] {
+				argok = false
+			}
 		}
+	} else {
+		argok = false
 	}
 	if argok == false {
 		t.Errorf("parse args err, expect: %s ,result: %s ", rargs, args.Args)

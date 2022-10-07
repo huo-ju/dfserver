@@ -69,7 +69,7 @@ Copy the `pyworker` dir to the GPU server, and install all diffusers dependencie
 ```bash
 cd pyworker
 pip install -r requirements.txt
-git clone https://github.com/huggingface/diffusers.git
+git clone -b 'v0.4.0' --single-branch --depth 1 https://github.com/huggingface/diffusers
 ```
 
 ### AI Worker Configuration
@@ -97,10 +97,13 @@ python worker.py clipinterrogator # clip-interrogator worker
 
 Add the discord bot to your disord server, and input your prompt.
 
-For example:
+Example:
 
 `!dream Cute sticker design of a AI image generator robotic pipeline service, app icon, trending on appstore, trending on pixiv, hyper-detailed, sharp`
 
+with negative prompt (diffuser >= v0.4.0): 
+
+`!dream Bouquet of Roses |red rose :-1|`
 
 The ai task will be collected from user input by discord bot, and published to the rabbitmq, then the task will be fetched by ai worker (running on GPU servers). 
 
