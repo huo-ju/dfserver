@@ -2,6 +2,7 @@ import os, sys, io, logging
 
 root_path = os.getcwd()
 sys.path.append(f"{root_path}/diffusers/src")
+import diffusers
 from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 import json
 import random
@@ -17,6 +18,9 @@ logging.basicConfig(
     level=logging.WARNING,
     filemode="w",
 )
+
+print("version:")
+print("diffusers:", diffusers.__version__)
 
 
 class Worker:
