@@ -1,6 +1,7 @@
 package data
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -53,7 +54,8 @@ End:
 					indexargstart = len(input)
 				}
 			} else if c == '|' {
-				if i-indexargstart == 2 { // xxxx:-1|, is not a args
+				_, err := strconv.Atoi(input[indexargstart:i])
+				if err == nil { // xxxx:-1|, is not a args
 					indexargstart = len(input) //recovery the init value
 					s = StatusCmd
 				}

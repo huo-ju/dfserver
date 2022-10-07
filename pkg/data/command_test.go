@@ -46,8 +46,8 @@ func TestParse(t *testing.T) {
 	args = ArgsParse(cmd5, argslist)
 	verifyargs(t, args, cmd5_cmd, cmd5_args)
 
-	cmd6 := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-1|"
-	cmd6_cmd := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-1|"
+	cmd6 := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-10|"
+	cmd6_cmd := "!dream half body portrait drawing of anime muscular horse, epic pose, pen and ink, intricate line drawings, by craig mullins, ruan jia, kentaro miura, greg rutkowski, |loundraw and dan mumford:-10|"
 	cmd6_args := []string{}
 	args = ArgsParse(cmd6, argslist)
 	verifyargs(t, args, cmd6_cmd, cmd6_args)
