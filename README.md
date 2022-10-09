@@ -17,8 +17,9 @@ Will soon support the generation of multiple images with a single command, and f
 - Guess prompt from an image (CLIP Interrogator)
 - Prompt Build Assist (finetuned from a GPT Neo2.7B model by using 200K prompts selected and preprocessed from krea-ai open-prompts. Model download: [https://huggingface.co/huoju/gptneoforsdprompt](https://huggingface.co/huoju/gptneoforsdprompt))
 
-![](public/images/demo1.png)
-![](public/images/demo2.png)
+
+<img src="https://raw.githubusercontent.com/huo-ju/dfserver/main/public/images/demo1.png" alt="demoimg1" width="400"/>
+<img src="https://raw.githubusercontent.com/huo-ju/dfserver/main/public/images/demo2.png" alt="demoimg2" width="400"/>
 
 # System Topology
 
@@ -100,7 +101,7 @@ python worker.py realesrgan #realesrgan upscaling worker
 python worker.py clipinterrogator # clip-interrogator worker
 ```
 
-### Useage
+### Usage
 
 Add the discord bot to your disord server, and input your prompt.
 
