@@ -17,8 +17,8 @@ Will soon support the generation of multiple images with a single command, and f
 - Guess prompt from an image (CLIP Interrogator)
 - Prompt Build Assist (finetuned from a GPT Neo2.7B model by using 200K prompts selected and preprocessed from krea-ai open-prompts. Model download: [https://huggingface.co/huoju/gptneoforsdprompt](https://huggingface.co/huoju/gptneoforsdprompt))
 
-![](public/images/demo1.jpg)
-![](public/images/demo2.jpg)
+![](public/images/demo1.png)
+![](public/images/demo2.png)
 
 # System Topology
 
