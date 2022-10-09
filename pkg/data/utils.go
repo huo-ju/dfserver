@@ -58,6 +58,7 @@ func CreateInterrogatorInputTask(data *[]byte) *dfpb.Input {
 	}
 	return input
 }
+
 func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
 	var outputlist []*dfpb.Output
 	if ol == nil {
@@ -176,6 +177,28 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
 		inputList = append(inputList, input)
 	}
 
+	taskId := uuid.New().String()
+	task := &dfpb.Task{TaskId: taskId, OutputList: outputList, InputList: inputList}
+	return task
+}
+
+func CreateGptNeoTask(prompt string) *dfpb.Task {
+	inputList := []*dfpb.Input{}
+	outputList := []*dfpb.Output{}
+	if strings.HasPrefix(prompt, "!build ") {
+		prompt = prompt[len("!build "):]
+	}
+	ainame := "ai.gptneo"
+
+	settings := &GptNeoSettings{}
+	settings.Prompt = prompt
+
+	inputId := uuid.New().String()
+	input := &dfpb.Input{InputId: inputId}
+	settingstr, _ := json.Marshal(settings)
+	input.Name = ainame
+	input.Settings = settingstr
+	inputList = append(inputList, input)
 	taskId := uuid.New().String()
 	task := &dfpb.Task{TaskId: taskId, OutputList: outputList, InputList: inputList}
 	return task

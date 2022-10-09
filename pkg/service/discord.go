@@ -202,6 +202,23 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 			d.ReplyMessage(m.ChannelID, msg)
 			//TODO, response err message, not support image format, only support png/jpg
 		}
+	} else if strings.HasPrefix(m.Content, "!build ") { //bot command
+		task := data.CreateGptNeoTask(m.Content)
+		name := "process." + d.servicename
+		data.AddDiscordInputTask(name, m.Reference(), task)
+
+		body, err := proto.Marshal(task)
+		if err != nil {
+			fmt.Println(err)
+			//TODO, response err message
+		}
+		priority := uint8(1)
+		err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, "all", body, priority)
+		if err != nil {
+			fmt.Println(err)
+			//TODO, response err message
+		}
+		d.s.ChannelMessageSend(m.ChannelID, "working..."+m.Content)
 	}
 }
 

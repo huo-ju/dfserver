@@ -39,7 +39,11 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 		if lastoutput.Error != "" {
 			content = fmt.Sprintf("Error: %s by %s\r", lastoutput.Error, lastoutput.ProducerName)
 		} else {
-			content = fmt.Sprintf("%s by %s\r", string(lastoutput.Data), lastoutput.ProducerName)
+			if lastinput.Name == "ai.gptneo" {
+				content = fmt.Sprintf("!dream %s | by %s\r", string(lastoutput.Data), lastoutput.ProducerName)
+			} else {
+				content = fmt.Sprintf("%s | by %s\r", string(lastoutput.Data), lastoutput.ProducerName)
+			}
 		}
 		msg := &discordgo.MessageSend{
 			Content:   content,
@@ -95,7 +99,6 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 			},
 		}
 	}
-
 	f.ds.ReplyMessage(channelid, msg)
 	return true, err
 }

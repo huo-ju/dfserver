@@ -38,3 +38,13 @@ def promptToSegs(prompt):
     if len(segs)==0:
         segs.append({"seg":prompt, "weight":0})
     return segs
+
+
+def gptoutputToPrompt(output):
+    outputtag = "<|modeloutput|>"
+    i = output.find(outputtag)
+    output= output[i+len(outputtag) :len(output)]
+    i = output.find(outputtag)
+    if i > 0:
+        output = output[0:i]
+    return output

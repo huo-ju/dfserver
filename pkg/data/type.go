@@ -22,6 +22,10 @@ type RealEsrganSettings struct {
 	FaceEnhance bool   `json:"face_enhance"`
 }
 
+type GptNeoSettings struct {
+	Prompt string `json:"prompt"`
+}
+
 type AISettings struct {
 	AiName   string      `json:"ainame"`
 	Settings interface{} `json:"settings"`
