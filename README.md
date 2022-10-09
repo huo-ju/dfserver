@@ -1,14 +1,21 @@
 # dfserver
 
-DFserver is an open-sourced distributed backend AI pipeline server for building self-hosted distributed GPU cluster to run the [Stable Diffusion](https://stability.ai/blog/stable-diffusion-public-release) model, but also has a potential to expend to general AI image or prompt generative models, large-scale production service, and etc.
+DFserver is an open-sourced distributed backend AI pipeline server for building self-hosted distributed GPU cluster to run the [Stable Diffusion](https://stability.ai/blog/stable-diffusion-public-release) and various AI image or prompt building model, but also has a potential to expend large-scale production service, and etc.
 
 Give us a star and your valuable feedback :)
 
 The service can uses idle fancy GPUs shared by your friends to build a GPU cluster for running various AI models or just be deployed on your own computer. In the future we will support counting and distributing possible revenue based on the workload of each GPU (Worker).
 
-I have a beautiful vision for DFserver, which can be an enterprise-level service application that can flexibly extend the pipeline to connect models for different tasks in the AI image generation workflow, such as DeepL for supporting multi language prompt input, or Gobig by DD for filling more rendering details while upscale, or even prompt building targeted fine-tune GPT model.
+I have a beautiful vision for DFserver, which can be an enterprise-level service application that can flexibly extend the pipeline to connect models for different tasks in the AI image generation workflow, such as DeepL for supporting multi language prompt input, or Gobig by DD for filling more rendering details while upscale, etc.
 
 Will soon support the generation of multiple images with a single command, and functions related to init-image.
+
+## Tasks currently supported in DFserver Pipeline server
+
+- AI image generator (Stable Diffusion 1.4) with negative prompt
+- Image Upscaling (Default realesrgan-x4plus model)
+- Guess prompt from an image (CLIP Interrogator)
+- Prompt Build Assist (finetuned from a GPT Neo2.7B model by using 200K prompts selected and preprocessed from krea-ai open-prompts. Model download: [https://huggingface.co/huoju/gptneoforsdprompt](https://huggingface.co/huoju/gptneoforsdprompt))
 
 ![](public/images/demo1.jpg)
 ![](public/images/demo2.jpg)
