@@ -12,7 +12,7 @@ Will soon support the generation of multiple images with a single command, and f
 
 ## Tasks currently supported in DFserver Pipeline server
 
-- AI image generator (Stable Diffusion 1.4) with negative prompt
+- AI image generator: Stable Diffusion 1.4 (with negative prompt) and Waifu Diffusion 1.3 
 - Image Upscaling (Default realesrgan-x4plus model)
 - Guess prompt from an image (CLIP Interrogator)
 - Prompt Build Assist (finetuned from a GPT Neo2.7B model by using 200K prompts selected and preprocessed from krea-ai open-prompts. Model download: [https://huggingface.co/huoju/gptneoforsdprompt](https://huggingface.co/huoju/gptneoforsdprompt))
