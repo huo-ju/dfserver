@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	dfpb "github.com/huo-ju/dfserver/pkg/pb"
@@ -61,12 +60,13 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 		filename += string(o.Args)
 	}
 
-	filename = strings.Replace(filename, " ", "_", -1)
-	if len(filename) > 250 { //max filename length 250
-		filename = filename[len(filename)-250:]
+	if len(filename) > 200 { //max filename length 200
+		filename = filename[len(filename)-200:]
 	}
 	if len(filename) == 0 {
 		filename = "output"
+	} else {
+		filename = StripFilename(filename)
 	}
 
 	msg := &discordgo.MessageSend{

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/google/uuid"
 
@@ -27,6 +28,13 @@ func mimeTofileext(mime string) string {
 	return ""
 
 }
+
+var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9]+`)
+
+func StripFilename(str string) string {
+	return nonAlphanumericRegex.ReplaceAllString(str, "_")
+}
+
 func (f *ProcessFileWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.Input, settingsdata []byte) (bool, error) {
 	lastoutput := outputList[len(outputList)-1]
 	var settings map[string]interface{}
