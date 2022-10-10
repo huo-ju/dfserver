@@ -11,10 +11,13 @@ MAX_RETRIES = 5
 QUEUE_QOS = 1
 WORKER_NAME = ai.sd14
 WORKER_KEYS = all
+#WORKER_KEYS = wf #waifu-diffusion worker
 
 [MODEL]
 USE_FP16 = False
 USE_SAFETYCHECKER = True
+#MODEL_NAME = wf  #default "", wf for waifu-diffusion
+#MODEL_ID = hakurei/waifu-diffusion #default CompVis/stable-diffusion-v1-4
 
 [WORKER]
 NAME = myworkername

@@ -81,7 +81,7 @@ func (d *DiscordService) Start(ctx context.Context) error {
 			content := re.ReplaceAllString(i.Message.Content, "")
 			args := data.ArgsParse(content, data.ArgsList)
 			//remove seed
-			task := data.DiscordCmdArgsToTask(args, true)
+			task, publishkey := data.DiscordCmdArgsToTask(args, true)
 			name := "process." + d.servicename
 			data.AddDiscordInputTask(name, i.Message.MessageReference, task)
 
@@ -91,7 +91,7 @@ func (d *DiscordService) Start(ctx context.Context) error {
 				//TODO, response err message
 			}
 			priority := uint8(1)
-			err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, "all", body, priority)
+			err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, publishkey, body, priority)
 			if err != nil {
 				fmt.Println(err)
 				//TODO, response err message
@@ -137,7 +137,7 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 	}
 	if strings.HasPrefix(m.Content, "!dream ") { //bot command
 		args := data.ArgsParse(m.Content, data.ArgsList)
-		task := data.DiscordCmdArgsToTask(args, false)
+		task, publishkey := data.DiscordCmdArgsToTask(args, false)
 		name := "process." + d.servicename
 		data.AddDiscordInputTask(name, m.Reference(), task)
 
@@ -147,7 +147,7 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 			//TODO, response err message
 		}
 		priority := uint8(1)
-		err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, "all", body, priority)
+		err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, publishkey, body, priority)
 		if err != nil {
 			fmt.Println(err)
 			//TODO, response err message

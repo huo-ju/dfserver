@@ -17,7 +17,7 @@ var ArgsList []string = []string{
 	"-h", "--help", "--tokenize", "-t", "--height", "-H", "--width", "-W",
 	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
 	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face",
-	"--negative", "-v"}
+	"--model", "-M"}
 
 const (
 	max_steps  = 150
@@ -72,7 +72,8 @@ func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
 	return task
 }
 
-func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
+func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) (*dfpb.Task, string) {
+	publishkey := "all"
 
 	//create task input and outputlist
 	inputList := []*dfpb.Input{}
@@ -135,6 +136,8 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
 			}
 		case "--upscale", "-U", "--face":
 			upscale = true
+		case "--model", "-M":
+			publishkey = item[1]
 		}
 	}
 
@@ -179,7 +182,7 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) *dfpb.Task {
 
 	taskId := uuid.New().String()
 	task := &dfpb.Task{TaskId: taskId, OutputList: outputList, InputList: inputList}
-	return task
+	return task, publishkey
 }
 
 func CreateGptNeoTask(prompt string) *dfpb.Task {

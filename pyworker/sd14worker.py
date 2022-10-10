@@ -2,7 +2,7 @@ import os, sys, io, logging
 
 root_path = os.getcwd()
 sys.path.append(f"{root_path}/diffusers/src")
-import diffusers
+import diffusers  
 from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 import json
 import random
@@ -22,11 +22,11 @@ logging.basicConfig(
 print("version:")
 print("diffusers:", diffusers.__version__)
 
-
 class Worker:
     def __init__(self, device, args):
         self.device = device
         self.args = args
+        self.model_name = ""
 
     def loadmodel(self):
         config = {}
@@ -39,6 +39,7 @@ class Worker:
 
         usefp16 = False
         usesafetychecker = True
+        model_id = "CompVis/stable-diffusion-v1-4"
 
         if "USE_FP16" in config:
             if config["USE_FP16"].lower() == "true":
@@ -48,7 +49,16 @@ class Worker:
             if config["USE_SAFETYCHECKER"].lower() == "false":
                 usesafetychecker = False
 
-        model_id = "CompVis/stable-diffusion-v1-4"
+        if "MODEL_ID" in config:
+            model_id = config["MODEL_ID"]
+
+        if "MODEL_NAME" in config:
+            self.model_name = config["MODEL_NAME"]
+
+
+        #model_id = "hakurei/waifu-diffusion"
+        print("model_id", model_id)
+        print("model_name", self.model_name)
 
         safechecker = DummySafetyChecker().safety_checker
         if usesafetychecker == True:
@@ -61,6 +71,7 @@ class Worker:
             )
 
         if usefp16 == True:
+            print("load float16 model")
             self.pipe = StableDiffusionPipeline.from_pretrained(
                 model_id,
                 revision="fp16",
@@ -70,6 +81,7 @@ class Worker:
                 use_auth_token=True,
             ).to("cuda")
         else:
+            print("load float32 model")
             self.pipe = StableDiffusionPipeline.from_pretrained(
                 model_id, scheduler=lms, safety_checker=safechecker, use_auth_token=True
             ).to("cuda")
@@ -146,4 +158,8 @@ class Worker:
             output = output + " -S " + str(settings["seed"])
         elif "seed" in finalsettings and finalsettings["seed"] != 0:
             output = output + " -S " + str(finalsettings["seed"])
+
+        if self.model_name != "":
+            output = output + " -M " + self.model_name
+
         return output
