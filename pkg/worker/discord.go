@@ -48,6 +48,7 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 			Content:   content,
 			Reference: ref,
 		}
+		AttachButton(lastinput.Name, msg)
 		f.ds.ReplyMessage(channelid, msg)
 		return true, err
 	}
@@ -74,8 +75,14 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 		File:      &discordgo.File{Name: filename + ".png", Reader: r},
 		Reference: ref,
 	}
+	AttachButton(lastinput.Name, msg)
 
-	if lastinput.Name == "ai.sd14" {
+	f.ds.ReplyMessage(channelid, msg)
+	return true, err
+}
+
+func AttachButton(taskname string, msg *discordgo.MessageSend) {
+	if taskname == "ai.sd14" {
 		msg.Components = []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
@@ -98,7 +105,20 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 				},
 			},
 		}
+	} else if taskname == "ai.gptneo" {
+		msg.Components = []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.Button{
+						Emoji: discordgo.ComponentEmoji{
+							Name: "",
+						},
+						Label:    "Dream",
+						CustomID: "bt_newvar",
+						Style:    discordgo.SuccessButton,
+					},
+				},
+			},
+		}
 	}
-	f.ds.ReplyMessage(channelid, msg)
-	return true, err
 }

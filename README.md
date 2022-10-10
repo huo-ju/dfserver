@@ -20,6 +20,8 @@ Will soon support the generation of multiple images with a single command, and f
 
 <img src="https://raw.githubusercontent.com/huo-ju/dfserver/main/public/images/demo1.png" alt="demoimg1" width="400"/>
 <img src="https://raw.githubusercontent.com/huo-ju/dfserver/main/public/images/demo2.png" alt="demoimg2" width="400"/>
+<img src="https://raw.githubusercontent.com/huo-ju/dfserver/main/public/images/prompt_builder.png" alt="prompt builder" width="800"/>
+<img src="https://raw.githubusercontent.com/huo-ju/dfserver/main/public/images/waifu.png" alt="waifu" width="400"/>
 
 # System Topology
 
