@@ -13,7 +13,7 @@ RestartSec=10
 # set to project root directory
 WorkingDirectory=/usr/local/dfworker
 # be sure to exec with venv python, abs path
-ExecStart=/var/venv/bin/python3 /usr/local/dfworker/tworker.py
+ExecStart=/var/venv/bin/python3 /usr/local/dfworker/worker.py sd14mega
 
 [Install]
 WantedBy=multi-user.target

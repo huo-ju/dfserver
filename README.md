@@ -79,13 +79,15 @@ Copy the `pyworker` dir to the GPU server, and install all diffusers dependencie
 ```bash
 cd pyworker
 pip install -r requirements.txt
-git clone -b 'v0.4.0' --single-branch --depth 1 https://github.com/huggingface/diffusers
+git clone https://github.com/huggingface/diffusers
+cd diffusers
+git reset --hard 2fdd094c10aadd71c17d3e3d28e47b6c3cf26bd2
 ```
 
 ### AI Worker Configuration
 
 ```bash
-cp configs/sd14_config.ini.sample configs/sd14_config.ini 
+cp configs/sd14mega_config.ini.sample configs/sd14mega_config.ini 
 #or
 cp configs/realesrgan_config.ini.sample configs/realesrgan_config.ini
 #or
@@ -96,7 +98,7 @@ Edit the config.ini, setup the username/password/host address/port of the rabbit
 
 ### Run the ai worker
 ```bash
-python worker.py sd14 #stable-diffusion worker
+python worker.py sd14mega #stable-diffusion worker with community SD Mega pipeline
 #or
 python worker.py realesrgan #realesrgan upscaling worker
 #or
@@ -126,7 +128,7 @@ Run the dfserver and aiworker on boot, please see the systemd scripts in `deploy
 * ✔️  Response error messages to users
 * ✔️  More AI workers, eg: upscale worker 
 * [] Multi GPUs worker support
-* [] Initial image
+* ✔️  Initial image
 * [] Mask/Inpaint
 
 # Credits

@@ -221,7 +221,8 @@ class Worker:
             return self.worktext2img(inputsettings, prevoutput)
         elif "pipeline" in inputsettings and inputsettings["pipeline"]=="img2img":
             return self.workimg2img(inputsettings, inputtask.Data, prevoutput)
-        return "ERR_AIWORK_INVAILD_PIPELINE", "", [], {}
+        else:
+            return self.worktext2img(inputsettings, prevoutput)
 
     def settingsToOutput(self, settings, finalsettings):
         output = settings["prompt"]
