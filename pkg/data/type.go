@@ -7,13 +7,16 @@ type UserInfo struct {
 }
 
 type DiffSettings struct {
+	Pipeline          string  `json:"pipeline"`
 	Prompt            string  `json:"prompt"`
 	Seed              uint64  `json:"seed"`
 	Number            uint    `json:"number"`
 	Height            uint    `json:"height"`
 	Width             uint    `json:"width"`
+	Strength          float32 `json:"strength"`
 	NumInferenceSteps uint    `json:"num_inference_steps"`
 	Guidance_scale    float32 `json:"guidance_scale"`
+	InitImageUrl      string  `json:"init_image_url"`
 	Eta               float32 `json:"eta"`
 }
 

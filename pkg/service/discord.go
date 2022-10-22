@@ -3,10 +3,9 @@ package service
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -40,7 +39,7 @@ func (d *DiscordService) Start(ctx context.Context) error {
 	d.s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if i.MessageComponentData().CustomID == "bt_upscale" {
 			if len(i.Message.Attachments) == 1 { //TODO: >1 multi images upscale ?
-				buff, err := DownloadFile(i.Message.Attachments[0].ProxyURL)
+				buff, err := data.DownloadFile(i.Message.Attachments[0].ProxyURL)
 				if err == nil {
 					buffbytes := buff.Bytes()
 					inputtask := data.CreateImageUpscaleInputTask(&buffbytes)
@@ -81,7 +80,8 @@ func (d *DiscordService) Start(ctx context.Context) error {
 			content := re.ReplaceAllString(i.Message.Content, "")
 			args := data.ArgsParse(content, data.ArgsList)
 			//remove seed
-			task, publishkey := data.DiscordCmdArgsToTask(args, true)
+			//TODO: re attach the init_image
+			task, publishkey := data.CreateSDTaskWithCmdArgs(args, nil, "", true)
 			name := "process." + d.servicename
 			data.AddDiscordInputTask(name, i.Message.MessageReference, task)
 
@@ -119,15 +119,14 @@ func (d *DiscordService) Start(ctx context.Context) error {
 	}
 }
 
-func DownloadFile(url string) (*bytes.Buffer, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
+func GetImageFromAttachment(att *discordgo.MessageAttachment) (*bytes.Buffer, string, error) {
+	if att.ContentType == "image/jpeg" || att.ContentType == "image/png" {
+		buff, err := data.DownloadFile(att.ProxyURL)
+		return buff, att.ProxyURL, err
+
+	} else {
+		return nil, "", errors.New("Error: only support png and jpg image")
 	}
-	defer resp.Body.Close()
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, resp.Body)
-	return &buf, err
 }
 
 func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.MessageCreate) {
@@ -137,10 +136,25 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 	}
 	if strings.HasPrefix(m.Content, "!dream ") { //bot command
 		args := data.ArgsParse(m.Content, data.ArgsList)
-		task, publishkey := data.DiscordCmdArgsToTask(args, false)
-		name := "process." + d.servicename
-		data.AddDiscordInputTask(name, m.Reference(), task)
 
+		var buff *bytes.Buffer
+		var err error
+		var url string
+		if len(m.Attachments) > 0 { //may an image uploaded
+			att := m.Attachments[0]
+			buff, url, err = GetImageFromAttachment(att)
+			if err != nil {
+				msg := &discordgo.MessageSend{
+					Content:   err.Error(),
+					Reference: m.Reference(),
+				}
+				d.ReplyMessage(m.ChannelID, msg)
+			}
+		}
+
+		name := "process." + d.servicename
+		task, publishkey := data.CreateSDTaskWithCmdArgs(args, buff, url, false)
+		data.AddDiscordInputTask(name, m.Reference(), task)
 		body, err := proto.Marshal(task)
 		if err != nil {
 			fmt.Println(err)
@@ -155,52 +169,32 @@ func (d *DiscordService) messageCreate(s *discordgo.Session, mc *discordgo.Messa
 		d.s.ChannelMessageSend(m.ChannelID, "working..."+args.Cmd)
 	} else if strings.HasPrefix(m.Content, "!guess") && len(m.Attachments) > 0 { //bot command
 		att := m.Attachments[0]
-		if att.ContentType == "image/jpeg" || att.ContentType == "image/png" {
-			if att.Size <= 2097152 {
-				//ok build tasks
-				buff, err := DownloadFile(att.ProxyURL)
-				if err == nil {
-					buffbytes := buff.Bytes()
-					inputtask := data.CreateInterrogatorInputTask(&buffbytes)
-					inputList := []*dfpb.Input{inputtask}
-					task := data.CreateTask(inputList, nil)
-					name := "process." + d.servicename
-					data.AddDiscordInputTask(name, m.Reference(), task)
-					body, err := proto.Marshal(task)
-					if err != nil {
-						fmt.Println(err)
-						//TODO, response err message
-					}
-					priority := uint8(1)
-					err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, "all", body, priority)
-					if err != nil {
-						fmt.Println(err)
-						//TODO, response err message
-					}
-					d.s.ChannelMessageSend(m.ChannelID, "guessing...")
-				} else {
-					//TODO, response err message
-					fmt.Println(err)
-				}
-			} else {
-				content := "Error: the  maximum supported image size is 2MB"
-				msg := &discordgo.MessageSend{
-					Content:   content,
-					Reference: m.Reference(),
-				}
-				d.ReplyMessage(m.ChannelID, msg)
-
-				//TODO, response err message, image must < 2M (2097152)
-			}
-
-		} else {
-			content := "Error: only support png and jpg image"
+		buff, _, err := GetImageFromAttachment(att)
+		if err != nil {
 			msg := &discordgo.MessageSend{
-				Content:   content,
+				Content:   err.Error(),
 				Reference: m.Reference(),
 			}
 			d.ReplyMessage(m.ChannelID, msg)
-			//TODO, response err message, not support image format, only support png/jpg
+		} else {
+			buffbytes := buff.Bytes()
+			inputtask := data.CreateInterrogatorInputTask(&buffbytes)
+			inputList := []*dfpb.Input{inputtask}
+			task := data.CreateTask(inputList, nil)
+			name := "process." + d.servicename
+			data.AddDiscordInputTask(name, m.Reference(), task)
+			body, err := proto.Marshal(task)
+			if err != nil {
+				fmt.Println(err)
+				//TODO, response err message
+			}
+			priority := uint8(1)
+			err = d.amqpQueue.PublishExchangePriority(task.InputList[0].Name, "all", body, priority)
+			if err != nil {
+				fmt.Println(err)
+				//TODO, response err message
+			}
+			d.s.ChannelMessageSend(m.ChannelID, "guessing...")
 		}
 	} else if strings.HasPrefix(m.Content, "!build ") { //bot command
 		task := data.CreateGptNeoTask(m.Content)

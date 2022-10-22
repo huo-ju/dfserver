@@ -1,9 +1,12 @@
 package data
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -16,6 +19,7 @@ import (
 var ArgsList []string = []string{
 	"-h", "--help", "--tokenize", "-t", "--height", "-H", "--width", "-W",
 	"--cfg_scale", "-C", "--number", "-n", "--separate-images", "-i", "--grid", "-g",
+	"--strength", "-E", "--init_image_url", "-IMG",
 	"--sampler", "-A", "--steps", "-s", "--seed", "-S", "--prior", "-p", "--upscale", "-U", "--face",
 	"--model", "-M"}
 
@@ -72,14 +76,15 @@ func CreateTask(il []*dfpb.Input, ol []*dfpb.Output) *dfpb.Task {
 	return task
 }
 
-func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) (*dfpb.Task, string) {
+func CreateSDTaskWithCmdArgs(args *CommandArgs, imgbuff *bytes.Buffer, initimgurl string, removeseed bool) (*dfpb.Task, string) {
 	publishkey := "all"
 
 	//create task input and outputlist
 	inputList := []*dfpb.Input{}
 	outputList := []*dfpb.Output{}
 
-	settings := &DiffSettings{}
+	settings := &DiffSettings{Pipeline: "text2img", InitImageUrl: initimgurl}
+
 	ainame := ""
 	if strings.HasPrefix(args.Cmd, "!dream ") {
 		ainame = "ai.sd14"
@@ -121,6 +126,16 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) (*dfpb.Task, strin
 				}
 				settings.NumInferenceSteps = uint(v)
 			}
+		case "--strength", "-E":
+			v, err := strconv.ParseFloat(item[1], 32)
+			if err == nil {
+				settings.Strength = float32(v)
+			}
+		case "--init_image_url", "-IMG":
+			if settings.InitImageUrl == "" {
+				settings.InitImageUrl = item[1]
+			}
+
 		case "--seed", "-S":
 			if removeseed == true {
 				continue
@@ -143,6 +158,18 @@ func DiscordCmdArgsToTask(args *CommandArgs, removeseed bool) (*dfpb.Task, strin
 
 	inputId := uuid.New().String()
 	input := &dfpb.Input{InputId: inputId}
+
+	if imgbuff != nil {
+		input.Data = imgbuff.Bytes()
+		settings.Pipeline = "img2img"
+	} else if settings.InitImageUrl != "" {
+		buff, err := DownloadFile(settings.InitImageUrl)
+		if err == nil {
+			input.Data = buff.Bytes()
+			settings.Pipeline = "img2img"
+		}
+	}
+
 	settingstr, _ := json.Marshal(settings)
 	input.Name = ainame
 	input.Settings = settingstr
@@ -257,5 +284,22 @@ func TaskNameToQNameAndRKey(taskname string) (string, string) {
 		return fmt.Sprintf("%s.%s", l[0], l[1]), l[2]
 	}
 	return taskname, ""
+
+}
+
+func DownloadFile(url string) (*bytes.Buffer, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.ContentLength <= 2097152 {
+		var buf bytes.Buffer
+		_, err = io.Copy(&buf, resp.Body)
+		return &buf, err
+	} else {
+		return nil, errors.New("Error: the  maximum supported image size is 2MB")
+	}
 
 }
