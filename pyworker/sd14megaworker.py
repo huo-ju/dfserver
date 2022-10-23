@@ -238,8 +238,8 @@ class Worker:
             output = output + " -S " + str(settings["seed"])
         if "init_image_url" in settings and settings["init_image_url"] != "":
             output = output + " -IMG " + str(settings["init_image_url"])
-        if "strength" in settings and settings["strength"] != "":
-            output = output + " -E" + str(settings["strength"])
+        if "strength" in settings and settings["strength"] != "" and settings["strength"] != "0":
+            output = output + " -E " + str(settings["strength"])
         elif "seed" in finalsettings and finalsettings["seed"] != 0:
             output = output + " -S " + str(finalsettings["seed"])
 
