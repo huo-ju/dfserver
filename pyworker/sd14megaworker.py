@@ -88,7 +88,7 @@ class Worker:
 
     def workimg2img(self, inputsettings, data, prevoutput):
         settings = {
-			"strength": 0.8,
+			"strength": 0.6,
             "num_inference_steps": 50,
             "guidance_scale": 7.5,
             "eta": 0,
@@ -240,6 +240,8 @@ class Worker:
             output = output + " -IMG " + str(settings["init_image_url"])
         if "strength" in settings and settings["strength"] != "" and settings["strength"] != "0":
             output = output + " -E " + str(settings["strength"])
+        if "seed" in settings and settings["seed"] != 0:
+            output = output + " -S " + str(settings["seed"])
         elif "seed" in finalsettings and finalsettings["seed"] != 0:
             output = output + " -S " + str(finalsettings["seed"])
 
