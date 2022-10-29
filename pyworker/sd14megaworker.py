@@ -234,11 +234,9 @@ class Worker:
             output = output + " -C " + str(settings["guidance_scale"])
         if settings["num_inference_steps"] != 0:
             output = output + " -s " + str(settings["num_inference_steps"])
-        if "seed" in settings and settings["seed"] != 0:
-            output = output + " -S " + str(settings["seed"])
         if "init_image_url" in settings and settings["init_image_url"] != "":
             output = output + " -IMG " + str(settings["init_image_url"])
-        if "strength" in settings and settings["strength"] != "" and settings["strength"] != "0":
+        if "strength" in settings and settings["strength"] != "" and settings["strength"] != 0:
             output = output + " -E " + str(settings["strength"])
         if "seed" in settings and settings["seed"] != 0:
             output = output + " -S " + str(settings["seed"])

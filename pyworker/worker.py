@@ -73,6 +73,7 @@ class ThreadedConsumer(threading.Thread):
 
 def loadconf(loadworkername):
     config = configparser.ConfigParser()
+    config.optionxform = str
     configfilename = "configs/{}_config.ini".format(loadworkername)
     print("loading config:", configfilename)
     config.read_file(open(configfilename, "r"))
