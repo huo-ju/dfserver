@@ -29,6 +29,10 @@ Will soon support the generation of multiple images with a single command, and f
 
 ![](public/images/topology.png)
 
+# Architecture
+
+![](public/images/architecture.png)
+
 # Task Sequence Diagram
 
 ![](public/images/sequence.png)
