@@ -4,7 +4,8 @@ DFserver is an open-sourced distributed backend AI pipeline server for building 
 
 Give us a star and your valuable feedback :)
 
-[<img src="http://img.youtube.com/vi/VG2Qo5r5Rj8/mqdefault.jpg" width="50%">](https://www.youtube.com/watch?v=VG2Qo5r5Rj8 "Watch the video")
+https://user-images.githubusercontent.com/561810/199627149-a8e0716d-3200-41ee-9fe6-77ff870431af.mp4
+
 
 The service can uses idle fancy GPUs shared by your friends to build a GPU cluster for running various AI models or just be deployed on your own computer. In the future we will support counting and distributing possible revenue based on the workload of each GPU (Worker).
 
