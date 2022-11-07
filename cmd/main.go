@@ -118,12 +118,6 @@ func main() {
 	StartService(ctx, cfg.Service, amqpQueue)
 	StartWorker(ctx, cfg.Worker, amqpQueue)
 
-	//go func() {
-	//	err = api.StartApiServer(cfg.Jwt_secret, port, amqpQueue)
-	//	if err != nil {
-	//		log.Fatalln(err)
-	//	}
-	//}()
 	signal.Notify(quitch, os.Interrupt, os.Kill, syscall.SIGTERM)
 	signalType := <-quitch
 	signal.Stop(quitch)
@@ -185,15 +179,23 @@ func StartWorker(ctx context.Context, wrkcfg map[string]data.WorkerItem, amqpQue
 func StartService(ctx context.Context, servicecfg map[string]map[string]string, amqpQueue *rabbitmq.AmqpQueue) {
 	for _, v := range servicecfg {
 		servicename := v["name"]
-		discordToken := v["token"]
-		discordPrefix := v["prefix"]
-		newdiscordservice := service.NewDiscordService(servicename, discordToken, discordPrefix, amqpQueue)
-		discordservices[servicename] = newdiscordservice
-		go func() {
-			err := discordservices[servicename].Start(ctx)
-			if err != nil {
-				log.Fatalln("StartService discord:", err)
-			}
-		}()
+		sc := strings.Split(servicename, ".")
+		if sc[0] == "discord" {
+			discordToken := v["token"]
+			discordPrefix := v["prefix"]
+			newdiscordservice := service.NewDiscordService(servicename, discordToken, discordPrefix, amqpQueue)
+			discordservices[servicename] = newdiscordservice
+			go func() {
+				err := discordservices[servicename].Start(ctx)
+				if err != nil {
+					log.Fatalln("StartService discord:", err)
+				}
+			}()
+		} else if sc[0] == "grpc" {
+			listen := v["listen"]
+			grpcservice := service.NewGrpcService(servicename, listen, amqpQueue)
+			go grpcservice.Start(ctx)
+		}
+
 	}
 }

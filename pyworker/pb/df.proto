@@ -2,6 +2,10 @@ syntax = "proto3";
 package dfserver.pb;
 option go_package = "github.com/huo-ju/dfserver/pkg/pb";
 
+service Dfapi {
+  rpc RunTask(Input) returns (stream Output) {}
+}
+
 message Output {
     string  InputId            = 1;
     int32   Version            = 2;

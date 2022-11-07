@@ -48,3 +48,7 @@ prefix = "!"
 #token = "my discord bot2 token"
 #prefix = "!"
 
+[SERVICE."grpc.server1"]
+name = "grpc.server1"
+listen = ":9090"
+
