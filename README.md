@@ -79,6 +79,12 @@ The default configuration was defined ONE task queue for stable diffusion ai wor
 ./dist/linux_amd64/dfserver --confpath=./configs
 ```
 
+or via docker-compose (so you don't need to install RabbitMQ particularly):
+```bash
+docker compose up -d
+```
+PS: You still need to set a user in RabbitMQ for ai worker after docker-compose starting up.
+
 ### AI Worker Install 
 
 Copy the `pyworker` dir to the GPU server, and install all diffusers dependencies(nvidia drivers, CUDA, pytorch, models etc...).

@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  dfserver-main:
+    build:
+      context: .
+      dockerfile: ./cmd/Dockerfile
+    container_name: dfserver-main
+    # volumes:
+    #   - ../configs:/app/configs
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    depends_on:
+      - rabbit
+    networks:
+      - dfserver-net
+    
+  rabbit:
+    image: rabbitmq:3.10-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    container_name: rabbitmq
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+      RABBITMQ_DEFAULT_VHOST: dfhost
+      RABBITMQ_DEFAULT_USER: goapp
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - dfserver-net
+
+networks:
+  dfserver-net:
+    driver: bridge
