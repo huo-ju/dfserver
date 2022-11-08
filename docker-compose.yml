@@ -5,8 +5,6 @@ services:
       context: .
       dockerfile: ./cmd/Dockerfile
     container_name: dfserver-main
-    # volumes:
-    #   - ../configs:/app/configs
     restart: always
     depends_on:
       - rabbit
