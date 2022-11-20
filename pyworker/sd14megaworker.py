@@ -1,6 +1,4 @@
 import os, sys, io, logging
-root_path = os.getcwd()
-sys.path.append(f"{root_path}/diffusers/src")
 import diffusers  
 from diffusers import DiffusionPipeline, LMSDiscreteScheduler
 import json

@@ -1,7 +1,5 @@
 import os, sys, io, logging
 
-root_path = os.getcwd()
-sys.path.append(f"{root_path}/diffusers/src")
 import diffusers  
 from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
 import json
@@ -132,7 +130,7 @@ class Worker:
         logging.debug(settings)
         try:
             with autocast("cuda"):
-                image = self.pipe(**settings)["sample"][0]
+                image = self.pipe(**settings).images[0]
             img_byte_arr = io.BytesIO()
             image.save(img_byte_arr, format="PNG")
             img_byte_arr = img_byte_arr.getvalue()

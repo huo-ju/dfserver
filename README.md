@@ -92,9 +92,6 @@ Copy the `pyworker` dir to the GPU server, and install all diffusers dependencie
 ```bash
 cd pyworker
 pip install -r requirements.txt
-git clone https://github.com/huggingface/diffusers
-cd diffusers
-git reset --hard 2fdd094c10aadd71c17d3e3d28e47b6c3cf26bd2
 ```
 
 ### AI Worker Configuration
