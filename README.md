@@ -4,6 +4,11 @@ DFserver is an open-sourced distributed backend AI pipeline server for building 
 
 Give us a star and your valuable feedback :)
 
+***news***
+
+Try Stable Diffusion 2 experimental worker: [SD2.md](SD2.md)
+
+
 https://user-images.githubusercontent.com/561810/199627149-a8e0716d-3200-41ee-9fe6-77ff870431af.mp4
 
 

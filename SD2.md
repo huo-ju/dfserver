@@ -1,6 +1,6 @@
 Stable Diffusion 2 support
 
-*** this is an experimental version ***
+***this is an experimental version***
 
 ### dfserver Configuration
 
@@ -37,6 +37,6 @@ cp configs/sd20_config.ini.sample configs/sd20mega_config.ini
 python worker.py sd20
 ```
 
-### Using
+### Using in discord bot
 
-!dream a cat -M sd2```
+!dream a cat -M sd2
