@@ -1,8 +1,8 @@
 import os, sys, io, logging
-#root_path = os.getcwd()
-#sys.path.append(f"{root_path}/diffusers/src")
+root_path = os.getcwd()
+sys.path.append(f"{root_path}/diffusers/src")
 import diffusers
-from diffusers import StableDiffusionPipeline, EulerDiscreteScheduler
+from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
 import json
 import random
 from torch import autocast
@@ -64,22 +64,26 @@ class Worker:
                 "CompVis/stable-diffusion-safety-checker"
             )
 
-        scheduler = EulerDiscreteScheduler.from_pretrained(model_id, subfolder="scheduler")
+        #EulerDiscreteScheduler.from_pretrained(model_id, subfolder="scheduler")
 
         if usefp16 == True:
             print("load float16 model")
-            self.pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16, revision="fp16", scheduler=scheduler).to("cuda")
+            self.pipe = DiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16, revision="fp16" )
         else:
             print("load float32 model")
-            self.pipe = StableDiffusionPipeline.from_pretrained(model_id, scheduler=scheduler).to("cuda")
+            self.pipe = DiffusionPipeline.from_pretrained(model_id)
+
+        self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
+        self.pipe = self.pipe.to("cuda")
 
     def work(self, inputtask, prevoutput):
         inputsettings = json.loads(inputtask.Settings)
         settings = {
             "height": 768,
             "width": 768,
-            "num_inference_steps": 50,
+            "num_inference_steps": 25,
             "guidance_scale": 9,
+            #"eta": 0,
         }
         if inputsettings["prompt"] != "":
             segs = promptutils.promptToSegs(inputsettings["prompt"])
@@ -90,7 +94,7 @@ class Worker:
                         settings["negative_prompt"] = seg["seg"]
                     else:
                         settings["negative_prompt"] += " " + seg["seg"] 
-                else: 
+                else:
                     if "prompt" not in settings:
                         settings["prompt"] = seg["seg"]
                     else:

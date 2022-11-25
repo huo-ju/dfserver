@@ -18,7 +18,9 @@ Then, ***Restart dfserver***
 
 ### SD2 Worker Install 
 
-Install the main branch of diffusers
+Install the main branch of diffusers, commit: 6b02323a602a66841729c3a5d60844b24aa81ff2 
+
+or v0.9.0
 
 ```bash
 pip install --upgrade git+https://github.com/huggingface/diffusers.git transformers accelerate scipy
