@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/huo-ju/gopngext/png"
+
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/google/uuid"
@@ -302,4 +304,20 @@ func DownloadFile(url string) (*bytes.Buffer, error) {
 		return nil, errors.New("Error: the  maximum supported image size is 2MB")
 	}
 
+}
+
+func AddImageMetaData(r io.Reader, imgdesc string, producer string) (io.Reader, error) {
+	textkv := make([]*png.TextItem, 2)
+	textkv[0] = &png.TextItem{Key: "Image Description", Value: imgdesc}
+	textkv[1] = &png.TextItem{Key: "Software", Value: fmt.Sprintf("dfserver, %s", producer)}
+	pngimg, err := png.Decode(r)
+	if err != nil {
+		return nil, err
+	}
+	buf := new(bytes.Buffer)
+	err = png.Encode(buf, pngimg, textkv)
+	if err != nil {
+		return nil, err
+	}
+	return bytes.NewReader(buf.Bytes()), nil
 }

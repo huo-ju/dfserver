@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/huo-ju/dfserver/pkg/data"
 	dfpb "github.com/huo-ju/dfserver/pkg/pb"
 	"github.com/huo-ju/dfserver/pkg/service"
 )
@@ -56,9 +57,21 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 	//bot response images
 	r := bytes.NewReader(lastoutput.Data)
 	filename := ""
+	imgdesc := ""
+	producer := ""
 	for _, o := range outputList {
 		content += fmt.Sprintf("!dream %s | by %s\r", string(o.Args), o.ProducerName)
 		filename += string(o.Args)
+		imgdesc += string(o.Args)
+		if len(producer) > 0 {
+			producer += " "
+		}
+		producer += o.ProducerName
+	}
+	//add tExt to png
+	nr, err := data.AddImageMetaData(r, imgdesc, producer)
+	if err != nil {
+		nr = bytes.NewReader(lastoutput.Data)
 	}
 
 	if len(filename) > 200 { //max filename length 200
@@ -72,7 +85,7 @@ func (f *ProcessDiscordWorker) Work(outputList []*dfpb.Output, lastinput *dfpb.I
 
 	msg := &discordgo.MessageSend{
 		Content:   content,
-		File:      &discordgo.File{Name: filename + ".png", Reader: r},
+		File:      &discordgo.File{Name: filename + ".png", Reader: nr},
 		Reference: ref,
 	}
 	AttachButton(lastinput.Name, msg)
