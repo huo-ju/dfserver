@@ -156,6 +156,9 @@ if __name__ == "__main__":
     if "SETTING" in cfg:
         settingscfg = cfg["SETTING"]
         workcfg.update(settingscfg)
+    if "ADAPTER_MODEL" in cfg:
+        modelcfg = cfg["ADAPTER_MODEL"]
+        workcfg["ADAPTER_MODEL"] = modelcfg
 
     worker = workermodule.Worker("cuda:0", {"config": workcfg})
     worker.loadmodel()
